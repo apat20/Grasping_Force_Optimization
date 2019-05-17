@@ -86,15 +86,15 @@ fprintf('The rank is:');
 fprintf('\n');
 disp(rank_jacobian);
 
-%Null space of the Hand Jacobian transpose
-%null_space_ = null(Hand_Jacobian.');
-%fprintf('The null space of the Hand Jacobian is:')
-%fprintf('\n');
-%disp(null_space_);
+%Null space of the Hand Jacobian
+null_space_ = null(Hand_Jacobian);
+fprintf('The null space basis of the Hand Jacobian is:')
+fprintf('\n');
+disp(null_space_);
 
 %Null space basis of the Hand Jacobian transpose
 null_space_basis = V(:,~s);
-fprintf('The null space basis: ');
+fprintf('The null space basis of the Hand Jacobian Transpose: ');
 fprintf('\n');
 disp(null_space_basis);
 

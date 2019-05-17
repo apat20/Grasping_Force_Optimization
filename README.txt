@@ -1,0 +1,1 @@
+Grasping force optimization for redundant manipulators.
