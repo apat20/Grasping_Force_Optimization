@@ -3,11 +3,13 @@ clc
 r = 2;
 b = 6;
 a = 4;
-theta_1 = 20;
-theta_2 = 30;
+theta_1 = deg2rad(20);
+theta_2 = deg2rad(30);
 l_1 = 20;
 l_2 = 20;
 
+%disp(theta_1)
+%disp(theta_2)
 
 G = [0,1,0,0,1,0,0,0;
     0,0,1,0,0,0,-1,0;
