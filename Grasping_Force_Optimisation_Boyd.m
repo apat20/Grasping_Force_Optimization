@@ -1,3 +1,12 @@
+%This code implements the Conic Formulation described by Stephen Boyd in
+%his paper 'Fast Computation of Optimal Contact Forces'
+%Here we have used just the grasp map to encode the contact information.
+
+
+clear;
+clc;
+
+%%
 fprintf('Grasping Force Optimisation using CVX');
 fprintf('\n');
 
@@ -42,6 +51,8 @@ end
 disp(G);
 
 
+
+%%
 F_external = [0;0;-10;0;0;0];
 fprintf('The external force acting on the object is:');
 fprintf('\n');
@@ -55,9 +66,6 @@ mu = 0.1;
 disp(mu);
 
 cvx_begin
-    cvx_precision high
-    variable F(n)
-    variable fc_1(m,n)cvx_begin
     cvx_precision high
     variable F(n)
     variable fc_1(m,n)
