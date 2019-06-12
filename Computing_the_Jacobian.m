@@ -1,5 +1,6 @@
 %This code is used to calculate the Spatial Jacobian for the SCARA
 %manipulator.
+%%
 clear;
 clc;
 
@@ -42,6 +43,8 @@ exp_twist_theta1 = GetExponential(omega, theta_1, q_1);
 exp_twist_theta2 = GetExponential(omega, theta_2, q_2);
 exp_twist_theta3 = GetExponential(omega, theta_3, q_3);
 
+
+%%
 %Calculating the transformation matrics for our manipulator using the
 %product of exponentials formula.
 %These transformation matrices are calculated upto each of the revolute
@@ -54,16 +57,6 @@ fprintf('The final rigid body transformation for the SCARA manipulator is:');
 fprintf('\n');
 disp(g1_3);
 
-% R = [cos(deg2rad(theta_1)+deg2rad(theta_2)+deg2rad(theta_3)), -sin(deg2rad(theta_1)+deg2rad(theta_2)+deg2rad(theta_3)), 0;
-%     sin(deg2rad(theta_1)+deg2rad(theta_2)+deg2rad(theta_3)), cos(deg2rad(theta_1)+deg2rad(theta_2)+deg2rad(theta_3)), 0;
-%     0, 0, 1];
-% disp(R);
-
-%Extracting the Rotation matrix and the position vector to calculate the
-%Adjoint matrix which is in turn required for computing the Jacobian.
-% R = g_3(1:3,1:3);
-% p = g_3(1:3,4);
-
 %Computing the Adjoint matrix using the function GetAdjoint for all three
 %transformations.
 Adjoint_matrix_1 = GetAdjoint(g1_1);
@@ -73,6 +66,7 @@ fprintf('The Adjoint matrix is:');
 fprintf('\n');
 disp(Adjoint_matrix_3);
 
+%%
 %Now we start computing the Spatial Jacobian
 %Computing the twists for each of the revolute joints in the manipulator
 eta_1 =GetTwist(omega, q_1); 
@@ -86,11 +80,36 @@ eta_3_dash = GetTwistDash(Adjoint_matrix_3, eta_3);
 
 %The Spatial Jacobian for the SCARA manipulator without the prismatic joint
 J_spatial = [eta_1, eta_2_dash, eta_3_dash];
+fprintf('The Spatial Jacobian is:');
+fprintf('\n');
 disp(J_spatial);
 
+%Computing the Analytical Jacobian using the Spatial Jacobian
+p = g1_3(1:3,4);
+fprintf('The position vector used for computing the Analytical Jacobian');
+fprintf('\n');
+disp(p)
 
+J_analytical = AnalyticalJacobian(J_spatial, p);
+fprintf('The Ananlytical Jacobian is:');
+fprintf('\n');
+disp(J_analytical);
+disp(J_analytical');
 
+%Consider an arbitary force vector just to establish the relationship
+%between the torque and the external forces.
 
+F_external = [80;20;-10;10;20;20];
+fprintf('The external force acting on the object is:');
+fprintf('\n');
+disp(F_external)
 
+%Calculate the Torques required from the analytical Jacobian and the
+%external Force vector
 
+tau = J_analytical'*F_external;
+fprintf('The torque vector calculated is as follows:');
+fprintf('\n');
+disp(tau);
+disp(norm(tau));
 
