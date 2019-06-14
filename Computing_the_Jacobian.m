@@ -43,7 +43,7 @@ exp_twist_theta1 = GetExponential(omega, theta_1, q_1);
 exp_twist_theta2 = GetExponential(omega, theta_2, q_2);
 exp_twist_theta3 = GetExponential(omega, theta_3, q_3);
 
-
+% disp(exp_twist_theta1);
 %%
 %Calculating the transformation matrics for our manipulator using the
 %product of exponentials formula.
@@ -107,9 +107,43 @@ disp(F_external)
 %Calculate the Torques required from the analytical Jacobian and the
 %external Force vector
 
-tau = J_analytical'*F_external;
-fprintf('The torque vector calculated is as follows:');
+% tau = J_analytical'*F_external;
+% fprintf('The torque vector calculated is as follows:');
+% fprintf('\n');
+% disp(tau);
+% disp(norm(tau));
+
+
+fprintf('exp_twist_theta1');
 fprintf('\n');
-disp(tau);
-disp(norm(tau));
+disp(exp_twist_theta1);
+
+
+fprintf('exp_twist_theta2');
+fprintf('\n');
+disp(exp_twist_theta2);
+
+
+fprintf('exp_twist_theta3');
+fprintf('\n');
+disp(exp_twist_theta3);
+
+fprintf('G1_1');
+fprintf('\n');
+disp(g1_1)
+
+fprintf('G1_2');
+fprintf('\n');
+disp(g1_2)
+
+fprintf('G1_3');
+fprintf('\n');
+disp(g1_3)
+
+      0   49.4599   53.7051
+         0  -17.6604   14.0033
+         0         0         0
+         0         0         0
+         0         0         0
+    1.0000    1.0000    1.0000
 
