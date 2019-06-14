@@ -1,10 +1,80 @@
 %This code implements the Conic Formulation described by Stephen Boyd in
 %his paper 'Fast Computation of Optimal Contact Forces'
 %Here we have used just the grasp map to encode the contact information.
-
-
 clear;
 clc;
+
+%The angles of rotation for each of the revolute joints of the SCARA
+%manipulator.
+theta_1 = 30;
+theta_2 = 20;
+theta_3 = 20;
+
+theta = [theta_1;theta_2;theta_3];
+% disp(theta);
+
+%Omega encodes the information regarding the axis of rotation of the SCARA
+%manipulator.
+omega_1 = [0;0;1];
+omega_2 = [0;0;1];
+omega_3 = [0;0;1];
+
+omega(:,:,1) = omega_1;
+omega(:,:,2) = omega_2;
+omega(:,:,3) = omega_3;
+
+% disp(omega);
+
+%Position vectors for the aribitarly chosen point on the axis of rotation.
+q_1 = [0;0;0];
+q_2 = [0;20;0];
+q_3 = [0;50;0];
+
+q(:,:,1) = q_1;
+q(:,:,2) = q_2;
+q(:,:,3) = q_3;
+
+% disp(q);
+
+% 'I' is the identity matrix
+I = eye(3);
+
+%P is the position vector of the end effecctor or tool frame with respect
+%to the inertial frame located at the base of the manipulator or in our
+%case the base of the SCARA manipulator.
+%P = [0; l1+l2; l0]
+P = [0;50;10];
+
+%This is the rigid body transformation matrix for the zero configuration of
+%the manipulator under consideration. In our case it is the SCARA
+%manipulator.
+g_zero = [I, P;
+          zeros(1,3),1];
+fprintf('The g_st_zero transformation matrix is:');
+fprintf('\n');
+disp(g_zero);
+
+%Calculating the Spatial Jacobian using the function Spatial Jacobian. For
+%more details on the nature of the input arguments refer to the script file
+%of the function.
+[g1, J_spatial] = SpatialJacobian(theta, omega, g_zero, q);
+
+fprintf('The Spatial Jacobian is:');
+fprintf('\n');
+disp(J_spatial);
+
+%Here we extract the vector from the last transformation used for
+%calculating the Analytical Jacobian.
+p = g1(1:3,4,3);
+fprintf('The position vector used for computing the Analytical Jacobian');
+fprintf('\n');
+disp(p)
+
+%Computing the Analytical Jacobian using the Spatial Jacobian
+J_analytical = AnalyticalJacobian(J_spatial, p);
+fprintf('The Ananlytical Jacobian is:');
+fprintf('\n');
+disp(J_analytical);
 
 %%
 fprintf('Grasping Force Optimisation using CVX');
@@ -39,7 +109,6 @@ sigma = 0.1;
 %friction and the Soft finger contact.
 prompt = 'Enter the type of contact:';
 x = input(prompt, 's');
-
 
 if x == 'SF'
     fprintf('The type of contact entered is soft fingered contact!');
@@ -91,8 +160,6 @@ if x == 'SF'
         norm(fc_2) <= F;
     cvx_end
     
-    
-
 %Conditional for point contact with friction 
 %The optimisation problem is solved within this loop as the optimisation
 %constraints are different for point contact with friction.

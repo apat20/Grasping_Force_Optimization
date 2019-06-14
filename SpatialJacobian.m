@@ -1,24 +1,26 @@
 %This function is used to compute the Spatial Jacobian
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%INPUT ARGUMENTS%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %The data is stored in the multidimensional arrays where in each page
 %contains an individual vector or a matrix depending on the information
 %encoded.
 
-%theta is a vector containing the angles of rotation of the revolute joints
+% 'theta' is a vector containing the angles of rotation of the revolute joints
 %of the manipulator under consideration 
 
-%omega is a multidimensional array in which each column vector contains the information regarding the axis
+% 'omega' is a multidimensional array in which each column vector contains the information regarding the axis
 %of rotation corresponding to each and every revolute joint.
 
-%q is a multidimensional array in which each vector contains the position of any
+% 'q' is a multidimensional array in which each vector contains the position of any
 %arbitarily chosen point on the axis of rotation.
 
-%P is a position vector of the tool frame with respect to the inertial
+% 'P' is a position vector of the tool frame with respect to the inertial
 %frame located at the base of the manipulator.
 
-function J_spatial = SpatialJacobian(theta, omega, g_zero, q)
+function [g1, J_spatial] = SpatialJacobian(theta, omega, g_zero, q)
     [x,~,~] = size(omega);
 
     %Computing the twists and storing them in a multidimensional array 'eta'
@@ -48,7 +50,9 @@ function J_spatial = SpatialJacobian(theta, omega, g_zero, q)
     for i = 1:x
         Adjoint_Matrix(:,:,i) = GetAdjoint(g1(:,:,i));
     end
-
+    
+    %Computing the twist dash second joint onwards. These twist dash form
+    %the columns of the Spatial Jacobian.
     for i = 2:x
         eta_dash(:,:,i) =  GetTwistDash(Adjoint_Matrix(:,:,i), eta(:,:,i));
     end

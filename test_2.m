@@ -48,8 +48,9 @@ fprintf('The g_st_zero transformation matrix is:');
 fprintf('\n');
 disp(g_zero);
 
-J_spatial = SpatialJacobian(theta, omega, g_zero, q);
+[g1,J_spatial] = SpatialJacobian(theta, omega, g_zero, q);
 disp(J_spatial);
+disp(g1);
 
 
 % function J_spatial = SpatialJacobian(theta, omega, g_zero, q)
@@ -131,3 +132,6 @@ disp(J_spatial);
 %         J_spatial(:,i) = eta_dash(:,:,i);
 %     end
 % end
+% -32.9813
+% 36.6041
+% 10.0000
