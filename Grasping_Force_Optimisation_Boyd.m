@@ -1,6 +1,10 @@
 %This code implements the Conic Formulation described by Stephen Boyd in
 %his paper 'Fast Computation of Optimal Contact Forces'
 %Here we have used just the grasp map to encode the contact information.
+
+%In this implementation we are assuming that the configurations of both the
+%manipulators is the same and the trasnformation between the contact frames
+%and the tool frame for both the contact points is the same.
 clear;
 clc;
 
@@ -57,7 +61,7 @@ disp(g_zero);
 %Calculating the Spatial Jacobian using the function Spatial Jacobian. For
 %more details on the nature of the input arguments refer to the script file
 %of the function.
-[g1, J_spatial] = SpatialJacobian(theta, omega, g_zero, q);
+[g1, J_spatial] = spatialJacobian(theta, omega, g_zero, q);
 
 fprintf('The Spatial Jacobian is:');
 fprintf('\n');
@@ -85,9 +89,13 @@ fprintf('Type "PF" at the prompt to select Point Contact with Friction');
 fprintf('\n');
 
 %The rotation matrices for our selected problem
+%The rotation matrices encode the orientation of the reference frame at the
+%contact point with respect to the object reference frame. i.e the
+%reference frame present at the COM of the object.
 R_1 = [0,1,0;
        0,0,1;
        1,0,0];
+ 
 R_2 = [1,0,0;
        0,0,-1;
        0,1,0];
@@ -118,6 +126,8 @@ if x == 'SF'
     G = [G_1,G_2];
     
     m = 4; n = 1;
+    Tau_min = 10;
+    Tau_max = 100;
     
     fprintf('The grasp map for the soft finger contact:');
     fprintf('\n');
@@ -140,24 +150,29 @@ if x == 'SF'
         variable F(n)
         variable fc_1(m,n)
         variable fc_2(m,n)
+        variable Tau(2*m,n)
         minimize F
         subject to
-        G*[fc_1;fc_2] + F_external == 0;
+            G*[fc_1;fc_2] + F_external == 0;
     
-        fc1 = fc_1(1:2);
-        fc2 = fc_2(1:2);
+            fc1 = fc_1(1:2);
+            fc2 = fc_2(1:2);
      
-        norm(fc1) <= mu*fc_1(3);
-        norm(fc2) <= mu*fc_2(3);
+            norm(fc1) <= mu*fc_1(3);
+            norm(fc2) <= mu*fc_2(3);
      
-        fc_1(3) >= 0;
-        fc_2(3) >= 0;
+            fc_1(3) >= 0;
+            fc_2(3) >= 0;
      
-        norm(fc_1(4)) <= sigma*fc_1(3);
-        norm(fc_2(4)) <= sigma*fc_2(3);
+            norm(fc_1(4)) <= sigma*fc_1(3);
+            norm(fc_2(4)) <= sigma*fc_2(3);
    
-        norm(fc_1) <= F;
-        norm(fc_2) <= F;
+            norm(fc_1) <= F;
+            norm(fc_2) <= F;
+        
+%             F_c = [fc_1;fc_2];
+%             Tau = J_analytical'*F_c;
+%             Tau_min <= Tau <= Tau_max;
     cvx_end
     
 %Conditional for point contact with friction 
