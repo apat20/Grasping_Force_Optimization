@@ -99,6 +99,19 @@ R_1 = [0,1,0;
 R_2 = [1,0,0;
        0,0,-1;
        0,1,0];
+   
+% The rotation matrix for the transformation between the contact frame and
+% the end effector frame.
+
+R = [1,0,0;
+     0,1,0;
+     0,0,1];
+% The transformation matrix for the rigid body transformation from the
+% contact frame to the end effector frame.
+% Assuming that T is the frame at the end effector and C is the contact
+% frame.
+G_tc = [R, zeros(3);
+        zeros(3), R];
 
 %The position vectors in the skew symmetric form for our selected problem
 p1_hat = [0,0,2;
@@ -112,6 +125,9 @@ F_external = [0;0;-10;0;0;0];
 mu = 0.1;
 sigma = 0.1;
 
+Tau_min = [10;10;10];
+Tau_max = [100;100;100];
+
 %User input to specify the type of contact to be used
 %We have consider only two types of contact that is the Point contact with
 %friction and the Soft finger contact.
@@ -121,13 +137,20 @@ x = input(prompt, 's');
 if x == 'SF'
     fprintf('The type of contact entered is soft fingered contact!');
     fprintf('\n');
+
+%   Wrench basis for soft finger contact:
+    B_c = [1,0,0,0
+           0,1,0,0;
+           0,0,1,0;
+           0,0,0,0;
+           0,0,0,0;
+           0,0,0,1];
+    
     G_1 = GraspMap(R_1, p1_hat, x);
     G_2 = GraspMap(R_2, p2_hat, x);
     G = [G_1,G_2];
     
     m = 4; n = 1;
-    Tau_min = 10;
-    Tau_max = 100;
     
     fprintf('The grasp map for the soft finger contact:');
     fprintf('\n');
@@ -150,7 +173,7 @@ if x == 'SF'
         variable F(n)
         variable fc_1(m,n)
         variable fc_2(m,n)
-        variable Tau(2*m,n)
+        variable Tau(3,1)
         minimize F
         subject to
             G*[fc_1;fc_2] + F_external == 0;
@@ -169,18 +192,35 @@ if x == 'SF'
    
             norm(fc_1) <= F;
             norm(fc_2) <= F;
-        
-%             F_c = [fc_1;fc_2];
-%             Tau = J_analytical'*F_c;
-%             Tau_min <= Tau <= Tau_max;
-    cvx_end
-    
+            
+%           Transforming the forces from the contact frame to the end
+%           effector frame for further analysis.
+            FC_1 = B_c*fc_1;
+            FC_2 = B_c*fc_2;
+            
+            FT_1 = G_tc*FC_1;
+            FT_2 = G_tc*FC_2;
+            
+%           Torque constraints on the manipulator.
+            Tau == J_analytical'*FT_1;
+            Tau_min <= Tau <= Tau_max;
+            
+      cvx_end
+
 %Conditional for point contact with friction 
-%The optimisation problem is solved within this loop as the optimisation
+%The optimisationproblem is solved within this loop as the optimisation
 %constraints are different for point contact with friction.
 elseif x == 'PF'
     fprintf('The type of contact entered is point contact with fingers!');
     fprintf('\n');
+
+%   Wrench basis for point contact with friction:
+    B_c = [1,0,0;
+           0,1,0;
+           0,0,1;
+           0,0,0;
+           0,0,0;
+           0,0,0];
     
     G_1 = GraspMap(R_1, p1_hat, x);
     G_2 = GraspMap(R_2, p2_hat, x);
@@ -205,6 +245,7 @@ elseif x == 'PF'
         variable F(n)
         variable fc_1(m,n)
         variable fc_2(m,n)
+        variable Tau(3,1)
         minimize F
         subject to
             G*[fc_1;fc_2] + F_external == 0;
@@ -217,6 +258,18 @@ elseif x == 'PF'
             
             norm(fc_1) <= F;
             norm(fc_2) <= F;
+            
+%           Transforming the forces from the contact frame to the end
+%           effector frame for further analysis.
+            FC_1 = B_c*fc_1;
+            FC_2 = B_c*fc_2;
+            
+            FT_1 = G_tc*FC_1;
+            FT_2 = G_tc*FC_2;
+            
+%           Torque constraints on the manipulator.
+            Tau == J_analytical'*FT_1;
+            Tau_min <= Tau <= Tau_max;
     cvx_end
 end
 
