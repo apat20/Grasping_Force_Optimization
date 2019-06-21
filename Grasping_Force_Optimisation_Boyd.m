@@ -173,7 +173,7 @@ if x == 'SF'
         variable F(n)
         variable fc_1(m,n)
         variable fc_2(m,n)
-        variable Tau(3,1)
+%         variable Tau(3,1)
         minimize F
         subject to
             G*[fc_1;fc_2] + F_external == 0;
@@ -195,15 +195,15 @@ if x == 'SF'
             
 %           Transforming the forces from the contact frame to the end
 %           effector frame for further analysis.
-            FC_1 = B_c*fc_1;
-            FC_2 = B_c*fc_2;
-            
-            FT_1 = G_tc*FC_1;
-            FT_2 = G_tc*FC_2;
-            
-%           Torque constraints on the manipulator.
-            Tau == J_analytical'*FT_1;
-            Tau_min <= Tau <= Tau_max;
+%             FC_1 = B_c*fc_1;
+%             FC_2 = B_c*fc_2;
+%             
+%             FT_1 = G_tc*FC_1;
+%             FT_2 = G_tc*FC_2;
+%             
+% %           Torque constraints on the manipulator.
+%             Tau == J_analytical'*FT_1;
+%             Tau_min <= Tau <= Tau_max;
             
       cvx_end
 
