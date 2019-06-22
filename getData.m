@@ -1,4 +1,4 @@
-% This file is used to read the data and process it into the necessary
+ % This file is used to read the data and process it into the necessary
 % format for computation purposes.
 
 
@@ -28,3 +28,15 @@ for i=1:m
     C{i} = strsplit(data{1}{i}, ' ');
     assignin('base', C{i}{1}, str2num(C{i}{3}));
 end
+
+theta = [theta_1;theta_2;theta_3];
+
+omega(:,:,1) = omega_1;
+omega(:,:,2) = omega_2;
+omega(:,:,3) = omega_3;
+
+q(:,:,1) = q_1;
+q(:,:,2) = q_2;
+q(:,:,3) = q_3;
+
+
