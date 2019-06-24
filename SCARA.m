@@ -27,37 +27,13 @@ classdef SCARA
     
 % Defining a function to calculate the Spatial Jacobian of a SCARA
 %     manipulator.
-        function J_spatial = spatialJacobian(S)
-             [x,~,~] = size(S.omega);
+        function [g1,J_spatial] = spatialJacobian(S)
+             %[x,~,~] = size(S.omega);
              I = eye(3);
              g_zero = [I, S.P_base;
              zeros(1,3),1];
-             for i=1:x
-                eta(:,:,i) = GetTwist(S.omega(:,:,i),S.q(:,:,i));
-                exp_twist_theta(:,:,i) = GetExponential(S.omega(:,:,i), S.theta(i), S.q(:,:,i));
-             end
-             g1(:,:,1) = exp_twist_theta(:,:,1);
-            for i = 2:x
-                g1(:,:,i) = g1(:,:,i-1)*exp_twist_theta(:,:,i);
-            end
-            for i = 1:x
-                g1(:,:,i) = g1(:,:,i)*g_zero;
-            end
-            for i = 1:x
-                Adjoint_Matrix(:,:,i) = GetAdjoint(g1(:,:,i));
-            end
-    
-            %Computing the twist dash second joint onwards. These twist dash form
-            %the columns of the Spatial Jacobian.
-            for i = 2:x
-                eta_dash(:,:,i) =  GetTwistDash(Adjoint_Matrix(:,:,i), eta(:,:,i));
-            end
-            J_spatial(:,1) = eta(:,:,1);
-            for i = 2:x
-                J_spatial(:,i) = eta_dash(:,:,i);
-            end
-            
-        end
+             [g1, J_spatial] = spatialJacobian(S.theta, S.omega, g_zero, S.q);            
+         end
             
         end
 end
