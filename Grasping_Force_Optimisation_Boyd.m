@@ -61,7 +61,11 @@ disp(g_zero);
 %Calculating the Spatial Jacobian using the function Spatial Jacobian. For
 %more details on the nature of the input arguments refer to the script file
 %of the function.
-[g1, J_spatial] = spatialJacobian(theta, omega, g_zero, q);
+[Adjoint_Matrix, g1, J_spatial] = spatialJacobian(theta, omega, g_zero, q);
+
+fprintf('The g1 matrix is:');
+fprintf('\n');
+disp(g1);
 
 fprintf('The Spatial Jacobian is:');
 fprintf('\n');

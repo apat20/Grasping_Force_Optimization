@@ -31,8 +31,8 @@
 %% CODE %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [g1, J_spatial] = spatialJacobian(theta, omega, g_zero, q)
-    [x,~,~] = size(omega);
+function [Adjoint_Matrix, g1, J_spatial] = spatialJacobian(theta, omega, g_zero, q)
+    [~,~,x] = size(omega);
 
     %Computing the twists and storing them in a multidimensional array 'eta'
     %where they can be referenced to as pages of the array.
@@ -42,7 +42,7 @@ function [g1, J_spatial] = spatialJacobian(theta, omega, g_zero, q)
         eta(:,:,i) = GetTwist(omega(:,:,i),q(:,:,i));
         exp_twist_theta(:,:,i) = GetExponential(omega(:,:,i), theta(i), q(:,:,i));
     end
-    
+     
     %Calculating this transformation upto of the tool frame with respect to the
     %frame at the base of the manipulator etc. This is stored in a
     %multidimensional array 'g1'. Each page of the multidimensional array
