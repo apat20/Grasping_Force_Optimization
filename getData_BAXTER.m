@@ -21,7 +21,7 @@ o(:,:,1) = o1; o(:,:,2) = o2; o(:,:,3) = o3; o(:,:,4) = o4;
 o(:,:,5) = o5; o(:,:,6) = o6; o(:,:,7) = o7; o(:,:,8) = o8;
 
 %Forming a multidimensional array 'w' to store all the 'wi's'
-w(:,:,1) = w1; w(:,:,2) = w2; w(:,:,3) = w3; w(:,:,4) = w4;
-w(:,:,5) = w5; w(:,:,6) = w6; w(:,:,7) = w7;
+% w(:,:,1) = w1; w(:,:,2) = w2; w(:,:,3) = w3; w(:,:,4) = w4;
+% w(:,:,5) = w5; w(:,:,6) = w6; w(:,:,7) = w7;
 
 [theta,omega] = quaternionToRotation(o);
