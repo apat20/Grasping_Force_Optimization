@@ -165,10 +165,10 @@ cvx_end
 
 cvx_begin
     cvx_precision high
-    variable F(n)
+    variable T(n)
     variable fc_1(m,n)
     variable fc_2(m,n)
-%   variable Tau_1(3,1)
+    variable Tau_1(3,1)
     minimize T
     subject to
     G*[fc_1;fc_2] + F_external == 0;
@@ -193,10 +193,10 @@ cvx_begin
              
     FT_1 = G_t1c1*FC_1;
     FT_2 = G_t1c1*FC_2;
-    
-     Tau_1 == J_analytical'*FT_1;
-     T_min <= Tau_1 <= T_max;
-     max(Tau_1) <= T;
+     
+    Tau_1 == J_analytical'*FT_1;
+    T_min <= Tau_1 <= T_max;
+    max(Tau_1) <= T;
 cvx_end
 
 
