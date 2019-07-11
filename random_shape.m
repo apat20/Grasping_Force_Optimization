@@ -1,22 +1,27 @@
-% Generate spherical point cloud.
-% In our case the center is [0,0,0]
+% Generating the shape of a light bulb.
+a=0.255/0.511;  
+r=2.8179;       
+vo=1;           
+m=0.511; 
+F = @(z)r^2/2.*((vo./(1+a.*(1-cos(z))))./vo).^2.*...
+    (vo./(vo./(1+a.*(1-cos(z))))+...
+    (vo./(1+a.*(1-cos(z))))./vo-sin(z).^2);
 
-numFaces = 50;
-[x,y,z] = sphere(numFaces);
-[m,n] = size(x);
-array_new = reshape([x,y,z],[(m)*(n),3]);
+t = linspace(0,2*pi,55); 
+z = linspace(0,pi,55); 
+[T,U] = meshgrid(t,z); 
+
+X = F(U).*sin(U).*cos(T); 
+Y = F(U).*sin(U).*sin(T); 
+Z = F(U).*cos(U); 
+
+[i,j] = size(X);
+
+array_new = reshape([X,Y,Z],[i*j,3]);
 ptCloud = pointCloud(array_new);
-% figure;
 pcshow(ptCloud);
 hold on
-% pcwrite(ptCloud, 'sphere.pcd');
-% title('Sphere with Default Color Map');
-% xlabel('X');
-% ylabel('Y');
-% zlabel('Z');
 
-
-% Generating the surface normals for matlab have the vector components.
 normals = pcnormals(ptCloud);
 
 % Plotting the normals on the surface of the generated the sphere.
@@ -56,4 +61,3 @@ end
 % All normals pointing outwards from the center.
 quiver3(x,y,z,u,v,w);
 hold off
-
