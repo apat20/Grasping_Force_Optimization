@@ -24,4 +24,4 @@ o(:,:,5) = o5; o(:,:,6) = o6; o(:,:,7) = o7; o(:,:,8) = o8;
 % w(:,:,1) = w1; w(:,:,2) = w2; w(:,:,3) = w3; w(:,:,4) = w4;
 % w(:,:,5) = w5; w(:,:,6) = w6; w(:,:,7) = w7;
 
-[theta,omega] = quaternionToRotation(o);
+[theta,omega] = quaternionToRotation(o,'Baxter');

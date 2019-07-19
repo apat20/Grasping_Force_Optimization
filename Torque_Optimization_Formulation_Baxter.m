@@ -25,7 +25,7 @@ o(:,:,5) = o5; o(:,:,6) = o6; o(:,:,7) = o7; o(:,:,8) = o8;
 % w(:,:,5) = w5; w(:,:,6) = w6; w(:,:,7) = w7;
 
 % Getting the 'theta' and the 'omega' from the quaternion representation
-[theta,omega] = quaternionToRotation(o);
+[theta,omega] = quaternionToRotation(o, 'Baxter');
 
 % Creating an object of the Baxter class with the desired properties.
 B = BAXTER(theta, omega, q, P_base);
