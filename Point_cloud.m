@@ -1,10 +1,14 @@
 % Generate spherical point cloud.
 % In our case the center is [0,0,0]
 
+close all;
+clear;
+clc;
+
 numFaces = 50;
 [x,y,z] = sphere(numFaces);
 [m,n] = size(x);
-array_new = reshape([x,y,z],[(m)*(n),3]);
+array_new = reshape([x+30,y+30,z+30],[(m)*(n),3]);
 ptCloud = pointCloud(array_new);
 % figure;
 pcshow(ptCloud);
@@ -30,8 +34,7 @@ w = normals(1:end,3);
 % quiver3(x,y,z,u,v,w);
 % hold off
 
-Center = [0,0,0];
-
+Center = [30,30,30];
 % Adjusting the normals which are not pointing in the same direction.
 for k = 1 : numel(x)
    p1 = Center - [x(k),y(k),z(k)];

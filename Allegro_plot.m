@@ -91,6 +91,7 @@ P_33 = exp_twist_theta_33 (1:3,4);
 P_34 = exp_twist_theta_34(1:3,4);
 
 
+
 %% Plotting Allegro hand 
 origin = [0;0;0];
 
@@ -126,6 +127,7 @@ Y_4 = [origin(2);JT41(2);JT42(2);JT43(2);JT44(2)];
 Z_4 = [origin(3);JT41(3);JT42(3);JT43(3);JT44(3)];
 
 
+%% Plotting the fingers and the hand.
 figure(1);
 grid on;
 % x = -100:5:100;
@@ -162,10 +164,4 @@ hold on;
 scatter3(X_4,Y_4,Z_4);
 hold on;
 line(X_4,Y_4,Z_4);
-hold off;
-
-
-
-
-
-
+hold off
