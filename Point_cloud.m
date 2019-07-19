@@ -9,7 +9,7 @@ ptCloud = pointCloud(array_new);
 % figure;
 pcshow(ptCloud);
 hold on
-% pcwrite(ptCloud, 'sphere.pcd');
+pcwrite(ptCloud, 'sphere.pcd');
 % title('Sphere with Default Color Map');
 % xlabel('X');
 % ylabel('Y');

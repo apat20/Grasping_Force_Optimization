@@ -32,19 +32,64 @@ P_base = [0;0;109];
 gst_0 = [I, P_base;
         zeros(1,3),1];
     
-exp_twist_theta_1 = GetExponential(omega_1, JT11_theta, JT21);
-exp_twist_theta_3 = GetExponential(omega_1, JT13_theta, JT23);
-exp_twist_theta_4 = GetExponential(omega_1, JT14_theta, JT24);
+exp_twist_theta_11 = GetExponential(omega_1, JT11_theta, JT11);
+exp_twist_theta_13 = GetExponential(omega_1, JT13_theta, JT13);
+exp_twist_theta_14 = GetExponential(omega_1, JT14_theta, JT14);
 
 % Forward Kinematics for Allegro:
-g_1 = exp_twist_theta_1*gst_0;
-g_3 = exp_twist_theta_3*exp_twist_theta_1*gst_0;
-g_4 = exp_twist_theta_4*exp_twist_theta_3*exp_twist_theta_1*gst_0;
+g_1 = exp_twist_theta_11*gst_0;
+g_3 = exp_twist_theta_13*exp_twist_theta_11*gst_0;
+g_4 = exp_twist_theta_14*exp_twist_theta_13*exp_twist_theta_11*gst_0;
 
 % Transformed position of points:
-P_1 = exp_twist_theta_1(1:3,4);
-P_3 = exp_twist_theta_3 (1:3,4);
-P_4 = exp_twist_theta_4(1:3,4);
+P_11 = exp_twist_theta_11(1:3,4);
+P_13 = exp_twist_theta_13 (1:3,4);
+P_14 = exp_twist_theta_14(1:3,4);
+
+%% Forward kinematics trial for second finger:
+JT21_theta =  8;
+JT23_theta = 12;
+JT24_theta =  17;
+
+omega_1= [0;1;0]; omega_3= [0;1;0]; omega_4 = [0;1;0];
+omega_2 = [0;0;1];
+
+I = eye(3,3);
+P_base = [0;0;109];
+gst_0 = [I, P_base;
+        zeros(1,3),1];
+
+exp_twist_theta_21 = GetExponential(omega_1, JT21_theta, JT21);
+exp_twist_theta_23 = GetExponential(omega_1, JT23_theta, JT23);
+exp_twist_theta_24 = GetExponential(omega_1, JT24_theta, JT24);
+
+% Transformed position of points:
+P_21 = exp_twist_theta_21(1:3,4);
+P_23 = exp_twist_theta_23 (1:3,4);
+P_24 = exp_twist_theta_24(1:3,4);
+
+%% Forward kinematics for the third finger
+JT31_theta =  18;
+JT33_theta = 10;
+JT34_theta =  8;
+
+omega_1= [0;1;0]; omega_3= [0;1;0]; omega_4 = [0;1;0];
+omega_2 = [0;0;1];
+
+I = eye(3,3);
+P_base = [0;0;109];
+gst_0 = [I, P_base;
+        zeros(1,3),1];
+
+exp_twist_theta_31 = GetExponential(omega_1, JT31_theta, JT31);
+exp_twist_theta_33 = GetExponential(omega_1, JT33_theta, JT33);
+exp_twist_theta_34 = GetExponential(omega_1, JT34_theta, JT34);
+
+% Transformed position of points:
+P_31 = exp_twist_theta_31(1:3,4);
+P_33 = exp_twist_theta_33 (1:3,4);
+P_34 = exp_twist_theta_34(1:3,4);
+
 
 %% Plotting Allegro hand 
 origin = [0;0;0];
@@ -54,9 +99,18 @@ Y_1 = [origin(2);JT11(2);JT12(2);JT13(2);JT14(2)];
 Z_1 = [origin(3);JT11(3);JT12(3);JT13(3);JT14(3)];
 
 % New position of the hand with repect to the old position:
-X_new = [origin(1);JT21(1) + P_1(1); JT23(1) + P_3(1);JT24(1) + P_4(1)];
-Y_new = [origin(2);JT21(2) + P_1(2);JT23(2) + P_3(2);JT24(2) + P_4(2)];
-Z_new = [origin(3);JT21(3) + P_1(3);JT23(3) + P_3(2);JT24(3) + P_4(3)];
+X_new_1 = [origin(1);JT11(1) + P_11(1); JT13(1) + P_13(1);JT14(1) + P_14(1)];
+Y_new_1 = [origin(2);JT11(2) + P_11(2);JT13(2) + P_13(2);JT14(2) + P_14(2)];
+Z_new_1 = [origin(3);JT11(3) + P_11(3);JT13(3) + P_13(2);JT14(3) + P_14(3)];
+
+X_new_2 = [origin(1);JT21(1) + P_21(1); JT23(1) + P_23(1);JT24(1) + P_24(1)];
+Y_new_2 = [origin(2);JT21(2) + P_21(2);JT23(2) + P_23(2);JT24(2) + P_24(2)];
+Z_new_2 = [origin(3);JT21(3) + P_21(3);JT23(3) + P_23(2);JT24(3) + P_24(3)];
+
+X_new_3 = [origin(1);JT31(1) + P_31(1); JT33(1) + P_33(1);JT34(1) + P_34(1)];
+Y_new_3 = [origin(2);JT31(2) + P_31(2);JT33(2) + P_33(2);JT34(2) + P_34(2)];
+Z_new_3 = [origin(3);JT31(3) + P_31(3);JT33(3) + P_33(2);JT34(3) + P_34(3)];
+
 
 % Old position of the hand 
 X_2 = [origin(1);JT21(1);JT22(1);JT23(1);JT24(1)];
@@ -85,13 +139,21 @@ scatter3(X_1,Y_1,Z_1);
 hold on;
 line(X_1,Y_1,Z_1);
 hold on;
-scatter3(X_new, Y_new, Z_new, 'r');
+scatter3(X_new_1, Y_new_1, Z_new_1, 'r');
 hold on;
-line(X_new, Y_new, Z_new, 'Color','red','LineStyle','--');
+line(X_new_1, Y_new_1, Z_new_1, 'Color','red','LineStyle','--');
+hold on;
+scatter3(X_new_2, Y_new_2, Z_new_2, 'r');
+hold on;
+line(X_new_2, Y_new_2, Z_new_2, 'Color','red','LineStyle','--');
 hold on;
 scatter3(X_2,Y_2,Z_2, 'b');
 hold on;
 line(X_2,Y_2,Z_2, 'Color','blue');
+hold on;
+scatter3(X_new_3, Y_new_3, Z_new_3, 'r');
+hold on;
+line(X_new_3, Y_new_3, Z_new_3, 'Color','red','LineStyle','--');
 hold on;
 scatter3(X_3,Y_3,Z_3);
 hold on;
