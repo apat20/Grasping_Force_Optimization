@@ -4,7 +4,7 @@
 %six components of a the contact wrench and therefore the dimensions of the
 %wrench basis have been updated.
 
-function [B_c,G] = GraspMap(R, p_hat, x)
+function [Adjoint,G] = GraspMap(R, p_hat, x)
     if x == 'SF'
 %       The identity matrix of the required dimensions
         I = eye(3,5);

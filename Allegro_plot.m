@@ -21,8 +21,8 @@ end
 
 %% Forward Kinematics trial for Allegro one finger:
 JT11_theta =  5;
-JT13_theta = 10;
-JT14_theta =  15;
+JT13_theta = 25;
+JT14_theta =  40;
 
 omega_1= [0;1;0]; omega_3= [0;1;0]; omega_4 = [0;1;0];
 omega_2 = [0;0;1];
@@ -126,6 +126,59 @@ X_4 = [origin(1);JT41(1);JT42(1);JT43(1);JT44(1)];
 Y_4 = [origin(2);JT41(2);JT42(2);JT43(2);JT44(2)];
 Z_4 = [origin(3);JT41(3);JT42(3);JT43(3);JT44(3)];
 
+%% Generate a sphere
+
+numFaces = 50;
+[x,y,z] = sphere(numFaces);
+[m,n] = size(x);
+array_new = reshape([x*30-60,y*30+30,z*30+30],[(m)*(n),3]);
+ptCloud = pointCloud(array_new);
+% figure;
+% pcshow(ptCloud);
+% hold on
+% pcwrite(ptCloud, 'sphere.pcd');
+% title('Sphere with Default Color Map');
+% xlabel('X');
+% ylabel('Y');
+% zlabel('Z');
+
+
+% Generating the surface normals for matlab have the vector components.
+normals = pcnormals(ptCloud);
+
+% Plotting the normals on the surface of the generated the sphere.
+x = ptCloud.Location(1:end, 1);
+y = ptCloud.Location(1:end, 2);
+z = ptCloud.Location(1:end, 3);
+u = normals(1:end,1);
+v = normals(1:end,2);
+w = normals(1:end,3);
+
+% quiver3(x,y,z,u,v,w);
+% hold off
+
+Center = [-60,30,30];
+% Adjusting the normals which are not pointing in the same direction.
+for k = 1 : numel(x)
+   p1 = Center - [x(k),y(k),z(k)];
+   p2 = [u(k),v(k),w(k)];
+   % Flip the normal vector if it is not pointing away and outward from the
+   % center
+   angle = atan2(norm(cross(p1,p2)),p1*p2');
+%  We change all the normals to pointing outwards, if we want them to point
+%  inwards change the conditional to 'angle > pi/2'.
+   if angle <= pi/2 || angle <= -pi/2
+       u(k) = -u(k);
+       v(k) = -v(k);
+       w(k) = -w(k);
+   elseif angle == pi/2
+       R=[cosd(pi/2) -sind(pi/2); sind(pi/2) cosd(pi/2)];
+       u(k) = u(k)*R';
+       v(k) = v(k)*R';
+       w(k) = w(k)*R';
+   end
+end
+
 
 %% Plotting the fingers and the hand.
 figure(1);
@@ -164,4 +217,6 @@ hold on;
 scatter3(X_4,Y_4,Z_4);
 hold on;
 line(X_4,Y_4,Z_4);
+hold on;
+quiver3(x,y,z,u,v,w);
 hold off

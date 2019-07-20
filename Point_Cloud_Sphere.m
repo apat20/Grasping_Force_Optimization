@@ -11,9 +11,9 @@ numFaces = 50;
 array_new = reshape([x+30,y+30,z+30],[(m)*(n),3]);
 ptCloud = pointCloud(array_new);
 % figure;
-pcshow(ptCloud);
-hold on
-pcwrite(ptCloud, 'sphere.pcd');
+% pcshow(ptCloud);
+% hold on
+% pcwrite(ptCloud, 'sphere.pcd');
 % title('Sphere with Default Color Map');
 % xlabel('X');
 % ylabel('Y');
