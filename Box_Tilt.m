@@ -1,3 +1,5 @@
+% Box tilting formulation done.
+
 close all;
 clear;
 clc;
@@ -7,7 +9,7 @@ x = 'SF';
 %  Getting the necessary rotation matrices:
 % R_OC1 = EulerRotation(0,90,0);
 % R_OC2 = EulerRotation(90,0,90);
-% R_AO = EulerRotation(0,0,0);
+R_AO = EulerRotation(0,0,0);
 
 R1 = [0,1,0;0,0,1;1,0,0];
 R2 = [1,0,0;0,0,-1;0,1,0];
@@ -36,7 +38,7 @@ G_2 = GraspMap(R2, p_OC2_hat, x);
 % Concatenating the individual grasp maps:
 G = [G_1,G_2];
 
-F_external = [0; 0; 20; 0; 0; 0];
+F_external = [10; 0; 20; 0; 0; 20];
 % beta = pinv(G)*-F_external;
 % fc1 = beta(1:6,1);
 % fc2 = beta(7:12,1);
@@ -44,6 +46,12 @@ F_external = [0; 0; 20; 0; 0; 0];
 m = 6; n = 1;
 mu = 0.1;
 sigma = 0.1;
+
+g_AO = [R_AO, p_AO;
+        zeros(1,3), 0];
+    
+Ad_AO = GetAdjoint(g_AO);
+
 
 %% 
 cvx_begin
@@ -70,4 +78,26 @@ cvx_begin
    
         norm(fc_1) <= F;
         norm(fc_2) <= F;
+cvx_end
+
+%% 
+cvx_begin
+    cvx_precision high
+    variable F_O(n)
+    variable f_O(m,n)
+    variable f_A(m,n)
+    minimize F_O
+    subject to
+        G*[fc_1;fc_2] - f_O == 0;
+        Ad_AO*f_O == f_A;
+        
+        f_a1 = f_A(1:2);
+        norm(f_a1) < mu*f_A(3)
+        f_A(3) > 0;
+        
+        f_A(4) == 0;
+        f_A(6) == 0;
+        f_A(5) > 0;
+        
+        norm(f_O) <= F_O;
 cvx_end
