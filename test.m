@@ -4,7 +4,7 @@
 % y=r*sin(teta)
 % plot3(x,y,zeros(1,numel(x)))
 
-% Define my 2 circles
+%% Define my 2 circles
 rng default
 center1 = randn(1,3);
 radius1 = .25;
