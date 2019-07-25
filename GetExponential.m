@@ -22,12 +22,12 @@ function exp_twist_theta = GetExponential(omega, theta, q)
     I = eye(3);
     
     %Skew symmetric form of the omega vector
-    omega_hat = [0, -omega(3),omega(2);
-                 omega(3), 0, omega(1);
-                 -omega(2), omega(1),0];
+    omega_hat = skewSymmetric(omega);
     
    %Using the Rodriguez formula to calculate the exponential of omega
    %formula to get the exponential coordinates for rotation.
+   
+   % Write a function for this and include it in here.!!!!!
    exp_omega_hat_theta = I + omega_hat*sin(deg2rad(theta)) + omega_hat^2*(1-cos(deg2rad(theta)));
    
    %Calculating the transformation using the exponential of twist formula
