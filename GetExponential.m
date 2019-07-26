@@ -26,6 +26,8 @@ function exp_twist_theta = GetExponential(omega, theta, q)
     
    %Using the Rodriguez formula to calculate the exponential of omega
    %formula to get the exponential coordinates for rotation.
+   
+   % Write a function for this and include it in here.!!!!!
    exp_omega_hat_theta = I + omega_hat*sin(deg2rad(theta)) + omega_hat^2*(1-cos(deg2rad(theta)));
    
    %Calculating the transformation using the exponential of twist formula

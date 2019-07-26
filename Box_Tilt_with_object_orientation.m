@@ -1,16 +1,19 @@
-% Box tilting formulation done.
+%% Grasping Force Optimization formulation for tilting an object.
+% We assume the dimensions of the box to be constant throughout the
+% process. 
 
 close all;
 clear all;
 clc;
 
+% Specifying the contact model:
 x = 'SF';
 
-%  Getting the necessary rotation matrices:
-% Why is R_OC1 changed? 
-% R_OC1 = [1,0,0;
-%          0,0,1;
-%          0,-1,0];
+% The angle at which the object has been tilted:
+theta = 30;
+
+%  Getting the necessary rotation matrices of the contact frames with 
+%  respect to the object frame.
 
 R_OC1 = [0,1,0;
          0,0,1;
@@ -20,37 +23,33 @@ R_OC2 = [1,0,0;
          0,0,-1;
          0,1,0];
 
-% Getting the necessary rotation matrices between the object and the
-% reference frames at the edge of the object
-R_OE1 = [1,0,0;
-        0,1,0;
-         0,0,1];
-R_OE2 = [1,0,0;
-        0,1,0;
-         0,0,1];
+% Getting the necessary position vectors of the contact frames with respect
+% to the object reference frame.
 
 p_OC1 = [1.5;-2;0];
 p_OC2 = [1.5;2;0];
-p_OE1 = [-2.5; -2;-1.5];
-p_OE2 = [-2.5; 2;-1.5];
+
+% Rotation matrices for the edge frames with respect to the 
+
+R_OE1 = EulerRotation(0,theta,0);
+R_OE2 = EulerRotation(0,theta,0);
+
+% The position vectors for the edge frames with respect to the object
+% frames:
+
+p_OE1 = [-2.5*cos(deg2rad(theta)); -2;-1.5*cos(deg2rad(theta))];
+p_OE2 = [-2.5*cos(deg2rad(theta)); 2;-1.5*cos(deg2rad(theta))];
 
 % Getting the skew symmetric forms of the position vectors:
 p_OC1_hat = skewSymmetric(p_OC1);
 p_OC2_hat = skewSymmetric(p_OC2);
-% p_OE1_hat = skewSymmetric(p_OE1);
-% p_OE2_hat = skewSymmetric(p_OE2);
 
-% Get the necessary Grasp Map:
 G_1 = GraspMap(R_OC1, p_OC1_hat, x);
 G_2 = GraspMap(R_OC2, p_OC2_hat, x);
 
-% Concatenating the individual grasp maps:
 G = [G_1,G_2];
 
-F_external = [0; 0; -20; 0; 0; 0];
-% beta = pinv(G)*-F_external;
-% fc1 = beta(1:6,1);
-% fc2 = beta(7:12,1);
+F_external = [0; 0; -20*cos(deg2rad(theta)); 0; 0; 0];
 
 m = 6; n = 1;
 mu = 0.1;
@@ -60,15 +59,9 @@ g_OE1 = [R_OE1, p_OE1;
          zeros(1,3), 1];
 Ad_OE1 = GetAdjoint(g_OE1);
 
-% disp(Ad_OE1)    
-
-% Ad_OE1 = [R_OE1, zeros()]
-
 g_OE2 = [R_OE2, p_OE2;
          zeros(1,3), 1];
 Ad_OE2 = GetAdjoint(g_OE2);
-
-% disp(Ad_OE2)
 
 %% Grasping force optimization formulation for the box tilting application
 cvx_begin
@@ -129,7 +122,7 @@ cvx_end
 
 fprintf("The value of the angle of tilt:");
 fprintf('\n');
-disp(0);
+disp(theta);
 
 fprintf("The value of f_E1:");
 fprintf('\n');
@@ -146,5 +139,3 @@ disp(f_E2);
 fprintf("The value of Adjoint times f_E2:");
 fprintf('\n');
 disp(Ad_OE1*f_E2);
-
-
