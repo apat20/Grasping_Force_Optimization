@@ -14,8 +14,9 @@ center = pointCloud(C);
 
 points = [0   -3.7279    0.2750;
          0   -5.4558    0.5500;
-         0   -7.1836    0.8250;
-         0    5.6128    0.5750];
+          0   -7.1836    0.8250;
+          0    5.6128    0.5750;
+          0,0,0];
      
 
 figure;
@@ -32,8 +33,18 @@ ylabel('Y');
 zlabel('Z');
 hold off;
 
-figure
-line([0.2448   -0.0000    0.5000],[0   -3.7279    0.2750]);
+% Calculating the position vectors:
+P1 = points(1,1:3);
+P2 = points(2,1:3);
+P3 = points(3,1:3);
+P4 = points(4,1:3);
+
+P_OC1 = P1 - C;
+P_OC2 = P2 - C;
+P_OC3 = P3 - C;
+P_OC4 = P4 - C;
+
+
 
 
 
