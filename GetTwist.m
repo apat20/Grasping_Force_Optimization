@@ -12,6 +12,6 @@
 
 %%
 function eta = GetTwist(omega,q)
-    eta = [cross(-omega,q);
+    eta = [-cross(omega,q);
                omega];           
 end

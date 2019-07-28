@@ -106,7 +106,7 @@ cvx_begin
         f_e2 = f_E2(1:2);
         
         norm(f_e1) <= mu*f_E1(3)
-         f_E1(3) > 0;
+        f_E1(3) > 0;
         
         norm(f_e2) <= mu*f_E2(3)
         f_E2(3) > 0;

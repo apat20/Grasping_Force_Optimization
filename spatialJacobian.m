@@ -28,10 +28,10 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% CODE %%
+%% CODE %%J
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function J_spatial = spatialJacobian(theta, omega, g_zero, q)
+function J_spatial = spatialJacobian(theta, omega, q)
     [~,~,x] = size(omega);
 
     %Computing the twists and storing them in a multidimensional array 'eta'
@@ -48,29 +48,25 @@ function J_spatial = spatialJacobian(theta, omega, g_zero, q)
     %multidimensional array 'g1'. Each page of the multidimensional array
     %contains the rigid body transformation upto that point e.g. g1_1, g1_2 and
     %g1_3
-    g1(:,:,1) = exp_twist_theta(:,:,1);
-    for i = 2:x
+   g1(:,:,1) = exp_twist_theta(:,:,1);
+   for i = 2:x-1
         g1(:,:,i) = g1(:,:,i-1)*exp_twist_theta(:,:,i);
-    end
-    for i = 1:x
-        g1(:,:,i) = g1(:,:,i)*g_zero;
-    end
-    
+   end
+   
+   [~,~,a] = size(g1);
+ 
+    for i = 1:a
     %Computing the Adjoint Matrix using the function GetAdjoint for all the
     %three rigid body transformations.
-    for i = 1:x
         Adjoint_Matrix(:,:,i) = GetAdjoint(g1(:,:,i));
-    end
-    
     %Computing the twist dash second joint onwards. These twist dash form
     %the columns of the Spatial Jacobian.
-    for i = 2:x
-        eta_dash(:,:,i) =  GetTwistDash(Adjoint_Matrix(:,:,i), eta(:,:,i));
+        eta_dash(:,:,i) =  GetTwistDash(Adjoint_Matrix(:,:,i), eta(:,:,i+1));
     end
 
-    J_spatial(:,1) = eta(:,:,1);
+     J_spatial(:,1) = eta(:,:,1);
     for i = 2:x
-        J_spatial(:,i) = eta_dash(:,:,i);
+        J_spatial(:,i) = eta_dash(:,:,i-1);
     end
 end
 
