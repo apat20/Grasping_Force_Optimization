@@ -31,7 +31,7 @@
 %% CODE %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [Adjoint_Matrix, g1, J_spatial] = spatialJacobian(theta, omega, g_zero, q)
+function J_spatial = spatialJacobian(theta, omega, g_zero, q)
     [~,~,x] = size(omega);
 
     %Computing the twists and storing them in a multidimensional array 'eta'

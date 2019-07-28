@@ -1,3 +1,7 @@
+close all;
+clear all;
+clc;
+
 x = 'SF';
 
 p_OC1 = [-0.2448;   -3.7279;   -0.2250];

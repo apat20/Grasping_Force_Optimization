@@ -1,6 +1,6 @@
-% close all;
-% clear;
-% clc;
+close all;
+clear;
+clc;
 
 data = getData('SCARA_2finger_box.txt');
 [z,~] = size(data{1});
@@ -43,6 +43,17 @@ G_t1c1 = [R_t1c1, zeros(3);
         zeros(3), R_t1c1];
 
 %The position vectors in the skew symmetric form for our selected problem
+
+I = eye(3,5);
+        Z = zeros(3,5);
+        z_small = zeros(3,1);
+        e_z = [0;0;1];
+        
+%       This is the wrench basis for the soft finger contact wherein all
+%       the dimension of the wrench is preserved to 6 * 1.
+        B_c = [I, z_small;
+               Z, e_z];
+
 p1_hat = [0,0,-2;
           0,0,0;
          2,0,0];
@@ -50,12 +61,12 @@ p2_hat = [0,0,2;
           0,0,0;
           -2,0,0];
       
-F_external = [0;0;-50;0;0;0];
+F_external = [0;0;-5;0;0;0];
 mu = 0.1;
 sigma = 0.1;
 
-T_max = [400;400;400];
-T_min = [-200;100;100];
+T_max = [50;50;50];
+T_min = [-50;-50;-50];
 
 x = 'SF';
 
@@ -98,14 +109,14 @@ cvx_begin
         norm(fc_2) <= F;
 cvx_end
 
-FC_1 = B_c*fc_1;
-FC_2 = B_c*fc_2;
-             
-FT_1 = G_t1c1*FC_1;
-FT_2 = G_t1c1*FC_2;
-
-Tau_1 = J_analytical'*FT_1;
-Tau_2 = J_analytical'*FT_2;
+% FC_1 = B_c*fc_1;
+% FC_2 = B_c*fc_2;
+%              
+% FT_1 = G_t1c1*FC_1;
+% FT_2 = G_t1c1*FC_2;
+% 
+% Tau_1 = J_analytical'*FT_1;
+% Tau_2 = J_analytical'*FT_2;
 
 %% Force Optimization formulation including the torque constraints.
 
