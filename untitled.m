@@ -64,6 +64,9 @@ w = selected_normals(1:end,3);
 quiver3(x,y,z,-u,-v,-w);
 hold off
 
+matrix_1 = getOrthogonal(selected_normals(1,:));
+
+
 %% 
 points = [4.0000         0         0
     4.1000         0    0.2500
@@ -147,3 +150,9 @@ axis equal;
 xlabel('X');
 ylabel('Y');
 zlabel('Z');
+%%
+r1 = [0.9285;0.0069;-0.3714];
+r2 = [-0.0069;1.0000;0.0013];
+r3 = [0.3714;0.0013;0.9285];
+
+R = [r1,r2,r3];
