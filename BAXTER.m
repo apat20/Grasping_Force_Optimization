@@ -27,38 +27,41 @@ classdef BAXTER
        end
 %  Defining a function to calculate the Spatial Jacobian for the Baxter
 %  robot arm.
-       function [Adjoint_Matrix, g1, J_spatial] = spatialJacobian(B)
-             %[x,~,~] = size(S.omega);
-             I = eye(3);
-             g_zero = [I, B.P_base;
-             zeros(1,3),1];
-             [Adjoint_Matrix, g1, J_spatial] = spatialJacobian(B.theta, B.omega, g_zero, B.q);            
+         function J_spatial = spatialJacobian(B)
+             J_spatial = spatialJacobian(B.theta, B.omega, B.q);                       
          end
+ %     Defining a function to calculate the transformation matrix between
+%      the base frame and the end effector frame of a manipulator
+       function g_st = getTransform(S)
+            g_st = getTransform(S.theta, S.omega, S.q, S.P_base); 
+       end
    end
    
    %   Defining static methods for the analytical and body Jacobian. Static
 %   methods do not take the object as an input argument.
     methods(Static = true)
-
 %       Method for computing the analytical Jacobian using the Spatial
 %       Jacobian and the transformation matrix between the Spatial frame
 %       and the tool frame.
-        function J_analytical = analyticalJacobian(J_spatial, g1)
-            p = g1(1:3,4,3);
-            p_hat = [0, -p(3), p(2);
-                     p(3), 0 , p(1);
-                    -p(2), p(1), 0];
+
+       function J_analytical = analyticalJacobian(J_spatial, g_st)
+            [~,~,x] = size(g_st);
+            g = g_st(:,:,x);
+            p = g(1:3,4);
+            p_hat = skewSymmetric(p);
             I = eye(3);
             Z = zeros(3);
             J_analytical = [I, -p_hat; Z,  I]*J_spatial;
         end
-
+        
 %       Method for computing the Body Jacobian using the Adjoint of the
 %       transformation matrix between the spatial frame(fixed frame) and
 %       the tool frame and the Spatial Jacobian for our manipulator.
-        function J_body = bodyJacobian(Adjoint_Matrix, J_spatial)
-            [~,~,x] = size(Adjoint_Matrix);
-            J_body = Adjoint_Matrix(:,:,x)*J_spatial;
+        function J_body = bodyJacobian(J_spatial, g_st)
+            [~,~,x] = size(g_st);
+            g = g_st(:,:,x);
+            Adjoint = GetAdjoint(g);
+            J_body = Adjoint*J_spatial;
         end
-end
+    end
 end

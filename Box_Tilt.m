@@ -58,7 +58,7 @@ sigma = 0.1;
 
 g_OE1 = [R_OE1, p_OE1;
          zeros(1,3), 1];
-Ad_OE1 = GetAdjoint(g_OE1);
+Ad_OE1 = GetAdjointWrench(g_OE1);
 
 % disp(Ad_OE1)    
 
@@ -66,7 +66,7 @@ Ad_OE1 = GetAdjoint(g_OE1);
 
 g_OE2 = [R_OE2, p_OE2;
          zeros(1,3), 1];
-Ad_OE2 = GetAdjoint(g_OE2);
+Ad_OE2 = GetAdjointWrench(g_OE2);
 
 % disp(Ad_OE2)
 

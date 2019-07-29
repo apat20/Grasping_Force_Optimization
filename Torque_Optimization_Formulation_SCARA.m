@@ -31,8 +31,9 @@ q(:,:,3) = q_3;
 %spatial Jacobian and the Analytical Jacobian.
 
 S = SCARA(theta, omega, q, P_base);
-[Adjoint_Matrix, g1,J_spatial] = spatialJacobian(S);
-J_analytical = S.analyticalJacobian(J_spatial, g1);
+J_spatial = spatialJacobian(S);
+g_st = getTransform(S);
+J_analytical = S.analyticalJacobian(J_spatial, g_st);
 
 
 % The transformation matrix for the rigid body transformation from the

@@ -27,6 +27,7 @@ R_OC2 = [1,0,0;
 % to the object reference frame.
 
 p_OC1 = [1.5;-2;0];
+
 p_OC2 = [1.5;2;0];
 
 % Rotation matrices for the edge frames with respect to the 
@@ -57,11 +58,11 @@ sigma = 0.1;
 
 g_OE1 = [R_OE1, p_OE1;
          zeros(1,3), 1];
-Ad_OE1 = GetAdjoint(g_OE1);
+Ad_OE1 = GetAdjointWrench(g_OE1);
 
 g_OE2 = [R_OE2, p_OE2;
          zeros(1,3), 1];
-Ad_OE2 = GetAdjoint(g_OE2);
+Ad_OE2 = GetAdjointWrench(g_OE2);
 
 %% Grasping force optimization formulation for the box tilting application
 cvx_begin
