@@ -26,26 +26,20 @@ array_normals = reshape([Nx,Ny,Nz],[m*n,3]);
 % point cloud.
 ptCloud = pointCloud(array_new);
 % Finding the geometric mean of our point cloud:
-C_new = [0,0,15];
+
 C = mean(array_new);
+C_1 = [0, 0, 15-5.1923];
+C_2 = [0, 0, 15-4.1538];
+C_3 = [0, 0, 15-3.1154];
+C_4 = [0, 0, 15-2.0769];
 center = pointCloud(C);
-center_new = pointCloud(C_new);
+% center_new = pointCloud(C_new);
 
 % The selected points for grasping
 selected_points = [8.9000         0   12.2500;
                     7.4000         0    8.5000;
                     5.9000         0    4.7500;
                   -7.4000    0.0000    8.5000];
-
-% selected_points = [8.4644    2.7503   12.2500;
-%                     6.5623    2.1322    7.2500;
-%                     4.6602    1.5142    2.2500;
-%                    -7.1329   -2.3176    8.7500];
-%           
-% selected_points = [-8.4644    -2.7503   12.2500;
-%                    6.5623    2.1322    7.2500;
-%                    8.4644    2.7503   12.2500;
-%                    -7.1329   -2.3176    8.7500];
                  
 % Components of the selected normals:
 
@@ -53,17 +47,18 @@ selected_normals = [0.9285    0.0069   -0.3714;
                     0.9285    0.0069   -0.3714;
                     0.9285    0.0069   -0.3714;
                    -0.9285    0.0069   -0.3714];
-%                
-% selected_normals = [%-0.8830    -0.2869   -0.3714;
-%                     0.8830    0.2869   -0.3714;
-%                     0.8830    0.2869   -0.3714;
-%                     -0.8830    -0.2869   -0.3714];
-
-
 figure;
 pcshow(ptCloud);
 hold on;
 pcshow(C,'r');
+hold on;
+pcshow(C_1,'b');
+hold on;
+pcshow(C_2,'b');
+hold on;
+pcshow(C_3,'b');
+hold on;
+pcshow(C_4,'b');
 hold on;
 pcshow(selected_points,'[1,0,0]')
 hold on;
@@ -101,16 +96,10 @@ P_OC4 = selected_points(4,:) - C;
 
 
 %%
-% points = array_new(62:122,:);
-% normal_components = array_normals(62:122,:);
-% for i = (10:20:61)
-%     disp(i);
-%     disp(points(i,:));
-% end
-
-% polyin = polyshape(array_new);
-% [x,y,z] = centroid(polyin);
-
+g1 = frustumCentroid(6,2,15);
+g2 = frustumCentroid(6,2,12);
+g3 = frustumCentroid(6,2,9);
+g4 = frustumCentroid(6,2,6);
 %%
 close all;
 clear all;
