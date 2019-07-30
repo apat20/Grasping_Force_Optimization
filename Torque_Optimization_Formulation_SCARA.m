@@ -110,13 +110,13 @@ cvx_begin
         norm(fc_2) <= F;
 cvx_end
 
-% FC_1 = B_c*fc_1;
+FC_1 = B_c*fc_1;
 % FC_2 = B_c*fc_2;
 %              
-% FT_1 = G_t1c1*FC_1;
+FT_1 = G_t1c1*FC_1;
 % FT_2 = G_t1c1*FC_2;
 % 
-% Tau_1 = J_analytical'*FT_1;
+Tau_1 = J_analytical'*FT_1;
 % Tau_2 = J_analytical'*FT_2;
 
 %% Force Optimization formulation including the torque constraints.
