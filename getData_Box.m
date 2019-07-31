@@ -173,7 +173,6 @@ p_OC(:,:,2) = p_OC2;
 
 F_external = [0; 0; -20*cos(deg2rad(theta)); 0; 0; 0];
 
-
 % Creating the box object of the required properties and applying the
 % methods of the class to the properties.
 B = BOX(theta, R_OC, R_OE, p_OC, p_OE);
