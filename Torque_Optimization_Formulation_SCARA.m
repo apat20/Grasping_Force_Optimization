@@ -62,7 +62,7 @@ p2_hat = [0,0,2;
           0,0,0;
           -2,0,0];
       
-F_external = [0;0;-5;0;0;0];
+F_external = [0;0;-12;0;0;0];
 mu = 0.1;
 sigma = 0.1;
 
@@ -74,8 +74,8 @@ x = 'SF';
 fprintf('The type of contact entered is soft fingered contact!');
 fprintf('\n');
 
-[Adjoint_1,G_1] = GraspMap(R_oc1, p1_hat, x);
-[Adjoint_2,G_2] = GraspMap(R_oc2, p2_hat, x);
+G_1 = GraspMap(R_oc1, p1_hat, x);
+G_2 = GraspMap(R_oc2, p2_hat, x);
 
 %Complete Grasp Map which preserves all the six components of the contact
 %wrenches
@@ -102,22 +102,24 @@ cvx_begin
      
         fc_1(3) >= 0;
         fc_2(3) >= 0;
+        fc_1(4) == 0;fc_2(4) == 0;
+        fc_1(5) == 0;fc_2(5) == 0;
      
         norm(fc_1(6)) <= sigma*fc_1(3);
         norm(fc_2(6)) <= sigma*fc_2(3);
    
-        norm(fc_1) <= F;
-        norm(fc_2) <= F;
+        fc_1 <= F;
+        fc_2 <= F;
 cvx_end
 
-FC_1 = B_c*fc_1;
-% FC_2 = B_c*fc_2;
-%              
-FT_1 = G_t1c1*FC_1;
-% FT_2 = G_t1c1*FC_2;
-% 
-Tau_1 = J_analytical'*FT_1;
-% Tau_2 = J_analytical'*FT_2;
+
+% Calculating the torques for the SCARA manipulator by the traditional way
+% without implementing the torque constraints in our formulation.
+FC_1 = B_c*fc_1;FC_2 = B_c*fc_2;
+            
+FT_1 = G_t1c1*FC_1;FT_2 = G_t1c1*FC_2;
+
+Tau_1 = J_analytical'*FT_1;Tau_2 = J_analytical'*FT_2;
 
 %% Force Optimization formulation including the torque constraints.
 
@@ -128,39 +130,52 @@ cvx_begin
     variable fc_2(m,n)
     variable Tau_1(3,1)
     variable Tau_2(3,1)
+    variable FC_1(m,n)
+    variable FC_2(m,n)
+    variable FT_1(m,n)
+    variable FT_2(m,n)
     minimize F
     subject to
-    G*[fc_1;fc_2] + F_external == 0;
+        G*[fc_1;fc_2] + F_external == 0;
     
-    fc1 = fc_1(1:2);
-    fc2 = fc_2(1:2);
+        fc1 = fc_1(1:2);
+        fc2 = fc_2(1:2);
      
-    norm(fc1) <= mu*fc_1(3);
-    norm(fc2) <= mu*fc_2(3);
+        norm(fc1) <= mu*fc_1(3);
+        norm(fc2) <= mu*fc_2(3);
      
-    fc_1(3) >= 0;
-    fc_2(3) >= 0;
+        fc_1(3) >= 0;
+        fc_2(3) >= 0;
+        fc_1(4) == 0;fc_2(4) == 0;
+        fc_1(5) == 0;fc_2(5) == 0;
      
-    norm(fc_1(6)) <= sigma*fc_1(3);
-    norm(fc_2(6)) <= sigma*fc_2(3);
-   
-    norm(fc_1) <= F;
-    norm(fc_2) <= F;
+        norm(fc_1(6)) <= sigma*fc_1(3);
+        norm(fc_2(6)) <= sigma*fc_2(3);
+        
+        norm(fc_1(1:3)) <= F;
+        norm(fc_2(1:3)) <= F;
+%         fc_1(3) <= 50;
+%         fc_2(3) <= 50;
+     
 %Transforming the forces from the contact frame to the end
 %effector frame for further analysis.
-    FC_1 = B_c*fc_1;
-    FC_2 = B_c*fc_2;
+        FC_1 == B_c*fc_1;
+        FC_2 == B_c*fc_2;
              
-    FT_1 = G_t1c1*FC_1;
-    FT_2 = G_t1c1*FC_2;
+        FT_1 == G_t1c1*FC_1;
+        FT_2 == G_t1c1*FC_2;
              
 %Torque constraints on the first manipulator/finger.
-    Tau_1 == J_analytical'*FT_1;
-    T_min <= Tau_1 <= T_max;
+        Tau_1 == J_analytical'*FT_1;
+%         Tau_1 == J_spatial'*FT_1;
+        T_min <= Tau_1 <= T_max;
 
 % Torque constraints on the second manipulator/finger.
-    Tau_2 == J_analytical'*FT_2;
-    T_min <= Tau_2 <= T_max;
+        Tau_2 == J_analytical'*FT_2;
+%         Tau_2 == J_spatial'*FT_1;
+        T_min <= Tau_2 <= T_max;
+        
+        
 cvx_end
 
 %% Torque Optimisation Formulation
@@ -197,6 +212,8 @@ cvx_begin
      
     fc_1(3) >= 0;
     fc_2(3) >= 0;
+    fc_1(4) == 0;fc_2(4) == 0;
+    fc_1(5) == 0;fc_2(5) == 0;
      
     norm(fc_1(6)) <= sigma*fc_1(3);
     norm(fc_2(6)) <= sigma*fc_2(3);

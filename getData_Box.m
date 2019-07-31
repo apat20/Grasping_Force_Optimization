@@ -260,3 +260,7 @@ disp(f_E2);
 fprintf("The value of Adjoint times f_E2:");
 fprintf('\n');
 disp(Ad_OE1*f_E2);
+
+fprintf("The value of G1 times fc_1:");
+fprintf('\n');
+disp(G1*fc_1);
