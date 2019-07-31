@@ -8,6 +8,26 @@ clc;
 
 [points_1, points_2, normals_1, normals_2] = selectPoints(array_new, array_normals, m);
 
+%% Getting different geometric centroid locations.
+g_1 = frustumCentroid(0.09, 0.05, 0.1);
+g_center_1 = [0,0,0.1-g_1];
+g_2 = frustumCentroid(0.09, 0.05, 0.08);
+g_center_2 = [0,0,0.08-g_2];
+g_3 = frustumCentroid(0.09, 0.05, 0.06);
+g_center_3 = [0,0,0.06-g_3];
+
+% selected_points_2 = [0.0730         0    0.0792;
+%                      0.0490         0    0.0216;
+%                     -0.0730    0.0000    0.0792;
+%                     -0.0490    0.0000    0.0216];
+% 
+% p_OC1_1 = selected_points_2(1,:) - g_center_3;
+% p_OC2_1 = selected_points_2(2,:) - g_center_3;
+% p_OC3_1 = selected_points_2(3,:) - g_center_3;
+% p_OC4_1 = selected_points_2(4,:) - g_center_3;
+
+
+
 %% Case I: 3 contact points on one side and 1 contact points on the other side
 % The exact location of these points is arbitrary and can be changed
 % according to the users wishes
@@ -35,6 +55,12 @@ figure;
 pcshow(point_cloud);
 hold on;
 pcshow(g_center,'b');
+hold on;
+pcshow(g_center_1,'b');
+hold on;
+pcshow(g_center_2,'b');
+hold on;
+pcshow(g_center_3,'b');
 hold on;
 pcshow(selected_points_1,'[1,0,0]')
 hold on;
@@ -80,14 +106,14 @@ p_OC4_1 = selected_points_1(4,:) - g_center;
 
 
 selected_points_2 = [0.0730         0    0.0792;
-                   0.0490         0    0.0216;
-                  -0.0490    0.0000    0.0216;
-                  -0.0730    0.0000    0.0792];
+                     0.0490         0    0.0216;
+                    -0.0730    0.0000    0.0792;
+                    -0.0490    0.0000    0.0216];
 
 selected_normals_2 = [0.9231    0.0068   -0.3846;
-                    0.9231    0.0068   -0.3846;
-                   -0.9231         0   -0.3846;
-                   -0.9231         0   -0.3846];
+                      0.9231    0.0068   -0.3846;
+                     -0.9231         0   -0.3846;
+                     -0.9231         0   -0.3846];
                
 % Processing the components for plotting the normals using 'quiver3'
 x_2 = selected_points_2(1:end,1);
@@ -101,6 +127,12 @@ figure;
 pcshow(point_cloud);
 hold on;
 pcshow(g_center,'b');
+hold on;
+pcshow(g_center_1,'b');
+hold on;
+pcshow(g_center_2,'b');
+hold on;
+pcshow(g_center_3,'b');
 hold on;
 pcshow(selected_points_2,'[1,0,0]')
 hold on;

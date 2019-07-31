@@ -1,4 +1,4 @@
- % This file is used to read the data and process it into the necessary
+% This file is used to read the data and process it into the necessary
 % format for computation purposes.
  
 
