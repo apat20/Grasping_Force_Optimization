@@ -79,7 +79,7 @@ cvx_begin
         fc_2(3) >= 0;
         fc_1(4) == 0;fc_2(4) == 0;
         fc_1(5) == 0;fc_2(5) == 0;
-%         fc_1(6) == 0;fc_2(6) == 0;
+%       fc_1(6) == 0;fc_2(6) == 0;
      
         norm(fc_1(6)) <= sigma*fc_1(3);
         norm(fc_2(6)) <= sigma*fc_2(3);
@@ -92,10 +92,10 @@ cvx_begin
         f_e1 = f_E1(1:2);
         f_e2 = f_E2(1:2);
         
-        norm(f_e1) <= mu*f_E1(3)
+        norm(f_e1) <= mu*f_E1(3);
         f_E1(3) > 0;
         
-        norm(f_e2) <= mu*f_E2(3)
+        norm(f_e2) <= mu*f_E2(3);
         f_E2(3) > 0;
         
 %       Implementing the moment constraints for the edge wrenches generated
@@ -226,10 +226,10 @@ cvx_begin
         f_e1 = f_E1(1:2);
         f_e2 = f_E2(1:2);
         
-        norm(f_e1) <= mu*f_E1(3)
+        norm(f_e1) < mu*f_E1(3)
         f_E1(3) > 0;
         
-        norm(f_e2) <= mu*f_E2(3)
+        norm(f_e2) < mu*f_E2(3)
         f_E2(3) > 0;
         
 %       Implementing the moment constraints for the edge wrenches generated

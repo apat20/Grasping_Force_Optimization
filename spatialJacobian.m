@@ -31,7 +31,7 @@
 %% CODE %%J
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function J_spatial = spatialJacobian(theta, omega, q)
+function [J_spatial,g1] = spatialJacobian(theta, omega, q)
     [~,~,x] = size(omega);
 
     %Computing the twists and storing them in a multidimensional array 'eta'
@@ -49,13 +49,13 @@ function J_spatial = spatialJacobian(theta, omega, q)
     %contains the rigid body transformation upto that point e.g. g1_1, g1_2 and
     %g1_3
    g1(:,:,1) = exp_twist_theta(:,:,1);
-   for i = 2:x-1
+   for i = 2:x
         g1(:,:,i) = g1(:,:,i-1)*exp_twist_theta(:,:,i);
    end
    
    [~,~,a] = size(g1);
  
-    for i = 1:a
+    for i = 1:a-1
     %Computing the Adjoint Matrix using the function GetAdjoint for all the
     %three rigid body transformations.
         Adjoint_Matrix(:,:,i) = GetAdjoint(g1(:,:,i));
