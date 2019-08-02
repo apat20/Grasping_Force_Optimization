@@ -11,8 +11,8 @@
 % 'q' is a 3*1 vector which contains the position of a point on the axis of
 %rotation. The choice of this point is arbitary and depends on the user.
 
-% 'theta' is the angle of rotation in degrees. It has been converted into
-%radians for computation purposes.
+% 'theta' is the angle of rotation in degrees. The input is in radians
+% itself.
 
 
 %%
@@ -28,7 +28,7 @@ function exp_twist_theta = GetExponential(omega, theta, q)
    %formula to get the exponential coordinates for rotation.
    
    % Write a function for this and include it in here.!!!!!
-   exp_omega_hat_theta = I + omega_hat*sin(deg2rad(theta)) + omega_hat^2*(1-cos(deg2rad(theta)));
+   exp_omega_hat_theta = I + omega_hat*sin(theta) + omega_hat^2*(1-cos(theta));
    
    %Calculating the transformation using the exponential of twist formula
    exp_twist_theta = [exp_omega_hat_theta, (I - exp_omega_hat_theta)*q;

@@ -27,18 +27,21 @@ end
 % Computing the position vector of the edge frames {E1} and {E2} with
 % respect to the object frame {O} while it is being tilted. Here 'alpha' is
 % the angle of tilt with respect to the surface.
-p_OE1_tilt = [p_OE1(1,1)*cos(deg2rad(alpha)); p_OE1(2,1); p_OE1(1,1)*sin(deg2rad(alpha)) + p_OE1(3,1)];
-p_OE2_tilt = [p_OE2(1,1)*cos(deg2rad(alpha)); p_OE2(2,1); p_OE2(1,1)*sin(deg2rad(alpha)) + p_OE2(3,1)];
+% p_OE1_tilt = [p_OE1(1,1)*cos(deg2rad(alpha)); p_OE1(2,1); p_OE1(1,1)*sin(deg2rad(alpha)) + p_OE1(3,1)];
+% p_OE2_tilt = [p_OE2(1,1)*cos(deg2rad(alpha)); p_OE2(2,1); p_OE2(1,1)*sin(deg2rad(alpha)) + p_OE2(3,1)];
 
 % Computing the rotation matrix for the orientation of the edge frames
 % {E1}and {E2} with respect to the object frame {O}. The orientation of the
 % object frame changes as the object is being tilted at an angle.
-x_OE = [sin(deg2rad(90-alpha)); 0; -cos(deg2rad(90-alpha))];
+x_OE = [cos(deg2rad(alpha)); 0; sin(deg2rad(alpha))];
 y_OE = [0;1;0];
-z_OE = [sin(deg2rad(alpha)); 0; cos(deg2rad(alpha))];
+z_OE = [-sin(deg2rad(alpha)); 0; cos(deg2rad(alpha))];
 
 R_OE1 = [x_OE,y_OE,z_OE];
 R_OE2 = [x_OE,y_OE,z_OE];
+
+p_OE1_tilt = R_OE1'*p_OE1;
+p_OE2_tilt = R_OE2'*p_OE2;
 
 % Storing the obtained data in multidimensional arrays for further
 % computing purposes.
@@ -74,10 +77,21 @@ G = [G1,G2];
 Ad_OE1 = Adjoint(:,:,1);
 Ad_OE2 = Adjoint(:,:,2);
 
+% The transformation matrix for the rigid body transformation from the
+% contact frame to the end effector frame.
+% Assuming that T is the frame at the end effector and C is the contact
+% frame. We have assumed that the orientation of both the frames is the
+% same.
+% Also we assume that the contact frames and the tool frames coincide.
+
+G_TC = [eye(3), zeros(3);
+        zeros(3), eye(3)];
+
 % Here the external force acting on the object is due to its self weight.
 % The weight of the object is 2kg.
-F_external_tilt = [0;0;F_external(3,:)*cos(deg2rad(alpha));0;0;0];
+F_external = [0;0;-20*cos(deg2rad(alpha));0;0;0];
 %% Computing the Jacobian for Baxter left and right arms.
+num_joints = numel(theta);
 
 % Define rotation axes (wrt. arm_mount frame for both the arms)
 w4 = w2; w5 = w3; w6 = w2; w7 = w3;
@@ -110,7 +124,12 @@ qr_r = g_base_right(1:3, 1:3) * qr + g_base_right(1:3, 4);
 gst0_r = g_base_right * g_st0_right;
 
 % Calculating the Jacobian for the left arm of the Baxter robot.
-[left_spatial_jac,gl] = baxter_spatial_jacobian_mat(qr_l, wr_l, theta, gst0_l);
+% [left_spatial_jac,gl] = baxter_spatial_jacobian_mat(qr_l, wr_l, theta, gst0_l);
+[g_st, J_spatial] = getSpatialJacobian(theta, wr_l, qr_l, gst0_l);
+
+g = g_st(:,:,num_joints);
+ p_vector = g(1:3,4);
+J_analytical = AnalyticalJacobian(J_spatial, p_vector);
 %% Grasping force optimization formulation for the box tilting application with Force minimization objective
 cvx_begin
     cvx_precision high
@@ -142,8 +161,8 @@ cvx_begin
 
         
 % Isotropic Soft Finger Contact Friction model
-        norm(fc1) <= mu*fc_1(3);
-        norm(fc2) <= mu*fc_2(3);
+        norm(fc1) < mu*fc_1(3);
+        norm(fc2) < mu*fc_2(3);
         norm(fc_1(6)) <= sigma*fc_1(3);
         norm(fc_2(6)) <= sigma*fc_2(3);
         
@@ -169,7 +188,7 @@ cvx_begin
         norm(f_e1) < mu*f_E1(3)
         f_E1(3) > 0;
         
-        norm(f_e2) < mu*f_E2(3)
+        norm(f_e2) < mu*f_E2(3);
         f_E2(3) > 0;
         
 %       Implementing the moment constraints for the edge wrenches generated
@@ -180,15 +199,15 @@ cvx_begin
          
 %%%%%%%%%%%%%Torque Constraints for the Baxter arm%%%%%%%%%%%%%%%%%%%%%%%%
          
-% Computing the Torques in the left arm of Baxter required to produce the 
-% necessary squeezing force at the contact points.
-       Tau_1 = left_spatial_jac'*fc_1;
-       
-% Implementing the torque limits as the torque constraints on the Baxter
-% joint torques.
-        Torque_limits_min <= Tau_1 <= Torque_limits_max;
-%         Tau_2 = left_spatial_jac'*fc_2;
-%         Torque_limits_min <= Tau_2 <= Torque_limits_max;
+% % Computing the Torques in the left arm of Baxter required to produce the 
+% % necessary squeezing force at the contact points.
+%         Tau_1 = J_analytical'*G_TC*fc_1;
+%        
+% % Implementing the torque limits as the torque constraints on the Baxter
+% % joint torques.
+%         Torque_limits_min <= Tau_1 <= Torque_limits_max;
+% %         Tau_2 = left_spatial_jac'*fc_2;
+% %         Torque_limits_min <= Tau_2 <= Torque_limits_max;
 cvx_end
 
 fprintf("The value of the angle of tilt:");
@@ -215,8 +234,8 @@ fprintf("The value of G1 times fc_1:");
 fprintf('\n');
 disp(G1*fc_1);
 
-Tau_1_before = left_spatial_jac'*fc_1;
-Tau_2_before = left_spatial_jac'*fc_2;
+% Tau_1_before = J_analytical'*fc_1;
+% Tau_2_before = J_analytical'*fc_2;
 
 %% Grasping Force Optimization Formulation by implementing the torque constraints and Torque Minimization objective
 cvx_begin
@@ -250,7 +269,7 @@ cvx_begin
 % No moments about the tangential axis at the cotacts
         fc_1(4) == 0;fc_2(4) == 0;
         fc_1(5) == 0;fc_2(5) == 0;
-
+       
         
 % Isotropic Soft Finger Contact Friction model
         norm(fc1) <= mu*fc_1(3);
@@ -277,10 +296,10 @@ cvx_begin
         f_e1 = f_E1(1:2);
         f_e2 = f_E2(1:2);
         
-        norm(f_e1) < mu*f_E1(3)
+        norm(f_e1) <= mu*f_E1(3)
         f_E1(3) > 0;
         
-        norm(f_e2) < mu*f_E2(3)
+        norm(f_e2) <= mu*f_E2(3)
         f_E2(3) > 0;
         
 %       Implementing the moment constraints for the edge wrenches generated
@@ -292,12 +311,12 @@ cvx_begin
 %%%%%%%%%%%%%Torque Constraints for the Baxter arm%%%%%%%%%%%%%%%%%%%%%%%%
 % Computing the Torques in the left arm of Baxter required to produce the 
 % necessary squeezing force at the contact points.
-        Tau_1 == left_spatial_jac'*fc_1;
+        Tau_1 == J_analytical'*G_TC*fc_1;
         
 % Implementing the torque limits as the torque constraints on the Baxter
 % joint torques.
         Torque_limits_min <= Tau_1 <= Torque_limits_max;
-        Tau_1 <= T;
+        max(abs(Tau_1)) <= T;
         
 %         Tau_2 == left_spatial_jac'*fc_2;
 %         Torque_limits_min <= Tau_2 <= Torque_limits_max;
