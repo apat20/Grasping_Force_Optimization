@@ -10,6 +10,8 @@ function Adjoint = GetAdjointWrench(g)
     
     p_hat = skewSymmetric(p);
          
-    Adjoint = [R, zeros(3)
+    Adjoint = [R, zeros(3);
                p_hat*R, R];
+%     Adjoint = [R, p_hat*R
+%                zeros(3), R];
 end
