@@ -1,12 +1,14 @@
 close all;
 clear all;
 clc;
+% name_left = ['left_s0', 'left_s1', 'left_e0', 'left_e1', 'left_w0', 'left_w1', 'left_w2'];
+% name_right = ['right_s0', 'right_s1', 'right_e0', 'right_e1', 'right_w0', 'right_w1', 'right_w2'];
 
 % Selecting the type of contact model
 c  = 'SF';
 
 % Reading the required data from the text file.
-data = getData('BAXTER_BOX.txt');
+data = getData('BAXTER_BOX_A.txt');
 [x,~] = size(data{1});
 C = {};
 
@@ -108,6 +110,7 @@ g_right = g_st_right(:,:,num_joints);
 p_right = g_right(1:3,4);
 J_analytical_right = AnalyticalJacobian(J_spatial_right, p_right);
 
+
 %% Grasping force optimization formulation for the box tilting application with Force minimization objective
 
 cvx_begin
@@ -123,37 +126,38 @@ cvx_begin
     
 %   The primary wrench balance condition:
 %         G_new*[fc_1;fc_2] + F_external == 0;
-         G_new*[fc_1;fc_2] + F_external + Ad_OE1_new*f_E1 + Ad_OE2_new*f_E2  == 0;
-   
+        G_new*[fc_1;fc_2] + F_external + Ad_OE1_new*f_E1 + Ad_OE2_new*f_E2  == 0;
+
+            
 %       Extracting the first two components from the contact wrench for
 %       ease in computation.
         fc1 = fc_1(1:2);
         fc2 = fc_2(1:2);
         
 %%%%%%%%%%%% Friction constraints at robot-object contacts%%%%%%%%%%%%%%%%
+% Anisotropic Soft Finger Contact Friction model
+        f_temp1 = [fc1(1)/e11,fc1(2)/e12, fc_1(6)/e1r];
+        norm(f_temp1) <= mu1*fc_1(3);
+        f_temp2 = [fc2(1)/e21;fc2(2)/e22; fc_2(6)/e2r];
+        norm(f_temp2) <= mu1*fc_2(3);
 % Isotropic Soft Finger Contact Friction model
-        norm(fc1) <= mu1*fc_1(3);
-        norm(fc2) <= mu1*fc_2(3);
+%         norm(fc1) <= mu1*fc_1(3);
+%         norm(fc2) <= mu1*fc_2(3);
 
 % Fingers can only push not pull
-        fc_1(3) >= 0;
+        fc_1(3) >= 0
         fc_2(3) >= 0;
        
 % No moments about the tangential axis at the cotacts
         fc_1(4) == 0;fc_2(4) == 0;
         fc_1(5) == 0;fc_2(5) == 0;
         
-        norm(fc_1(6)) <= sigma*fc_1(3);
-        norm(fc_2(6)) <= sigma*fc_2(3);
+%         norm(fc_1(6)) <= sigma*fc_1(3);
+%         norm(fc_2(6)) <= sigma*fc_2(3);
 
 %       Point Contact with friction model
 %       fc_1(6) == 0;fc_2(6) == 0;
         
-% Anisotropic Soft Finger Contact Friction model
-%         f_temp1 = [fc1(1)/e11;fc1(2)/e12; fc_1(6)/e1r];
-%         norm(f_temp1) <= mu*fc_1(3);
-%         f_temp2 = [fc2(1)/e21;fc2(2)/e22; fc_2(6)/e2r];
-%         norm(f_temp2) <= mu*fc_2(3);
 
 % The normal force at the contact frame should less than the scalar value
 % 'F' which is being minimized.
@@ -176,6 +180,8 @@ cvx_begin
         f_E1(4) == 0;f_E2(4) == 0;
         f_E1(6) == 0;f_E2(6) == 0;
         f_E1(5) == 0;f_E2(5) == 0;
+        
+
          
 %%%%%%%%%%%%%Torque Constraints for the Baxter arm%%%%%%%%%%%%%%%%%%%%%%%%
          
@@ -202,14 +208,6 @@ fprintf("The value of fc_2:");
 fprintf('\n');
 disp(fc_2);
 
-fprintf("The value of max of Tau_left:");
-fprintf('\n');
-disp(max(abs(Tau_left)));
-
-fprintf("The value of max of Tau_right:")
-fprintf('\n');
-disp(max(abs(Tau_right)));
-
 fprintf("The value of f_E1:");
 fprintf('\n');
 disp(f_E1);
@@ -218,6 +216,27 @@ fprintf("The value o f_E2:");
 fprintf('\n');
 disp(f_E2);
 
+fprintf("The value of max of Tau_left:");
+fprintf('\n');
+disp(max(abs(Tau_left)));
+
+Tau_left_temp = abs(Tau_left);
+value_left = find(Tau_left_temp == max(abs(Tau_left)));
+
+fprintf("Left arm index:")
+disp(value_left);
+
+fprintf("The value of max of Tau_right:")
+fprintf('\n');
+disp(max(abs(Tau_right)));
+
+Tau_right_temp = abs(Tau_right);
+value_right = find(Tau_right_temp == max(abs(Tau_right)));
+
+fprintf("Right arm index:")
+disp(value_right);
+
+
 fprintf("Difference for f_E1:");
 fprintf('\n');
 disp((mu2*f_E1(3))-norm(f_e1));
@@ -225,6 +244,24 @@ disp((mu2*f_E1(3))-norm(f_e1));
 fprintf("Difference for f_E2:");
 fprintf('\n');
 disp((mu2*f_E2(3))-norm(f_e2));
+
+x_1 = Ad_OE1_new*f_E1;
+
+x_2 = Ad_OE2_new*f_E2;
+
+fprintf('The moment difference is:');
+disp(x_1(4:6,1)+x_2(4:6,1));
+
+a = G_new*[fc_1;fc_2];
+
+fprintf('The net wrench due to the contact force is:')
+fprintf('\n');
+disp(G_new*[fc_1;fc_2]);
+
+fprintf('The net moment due to the contact forces is:');
+fprintf('\n');
+disp(a(4:6,1))
+
 
 
 %% Grasping Force Optimization Formulation by implementing the torque constraints and Torque Minimization objective
@@ -262,19 +299,19 @@ cvx_begin
        
         
 % Isotropic Soft Finger Contact Friction model
-        norm(fc1) <= mu1*fc_1(3);
-        norm(fc2) <= mu1*fc_2(3);
-        norm(fc_1(6)) <= sigma*fc_1(3);
-        norm(fc_2(6)) <= sigma*fc_2(3);
-        
+%         norm(fc1) <= mu1*fc_1(3);
+%         norm(fc2) <= mu1*fc_2(3);
+%         norm(fc_1(6)) <= sigma*fc_1(3);
+%         norm(fc_2(6)) <= sigma*fc_2(3);
+%         
 %       Point Contact with friction model
 %       fc_1(6) == 0;fc_2(6) == 0;
         
 % Anisotropic Soft Finger Contact Friction model
-%         f_temp1 = [fc1(1)/e11;fc1(2)/e12; fc_1(6)/e1r];
-%         norm(f_temp1) <= mu*fc_1(3);
-%         f_temp2 = [fc2(1)/e21;fc2(2)/e22; fc_2(6)/e2r];
-%         norm(f_temp2) <= mu*fc_2(3);
+        f_temp1 = [fc1(1)/e11;fc1(2)/e12; fc_1(6)/e1r];
+        norm(f_temp1) <= mu1*fc_1(3);
+        f_temp2 = [fc2(1)/e21;fc2(2)/e22; fc_2(6)/e2r];
+        norm(f_temp2) <= mu1*fc_2(3);
 
 % The normal force at the contact frame should less than the scalar value
 % 'F' which is being minimized.
@@ -325,14 +362,6 @@ fprintf("The value of fc_2:");
 fprintf('\n');
 disp(fc_2);
 
-fprintf("The value of max of Tau_left:");
-fprintf('\n');
-disp(max(abs(Tau_left)));
-
-fprintf("The value of max of Tau_right:")
-fprintf('\n');
-disp(max(abs(Tau_right)));
-
 fprintf("The value of f_E1:");
 fprintf('\n');
 disp(f_E1);
@@ -340,4 +369,53 @@ disp(f_E1);
 fprintf("The value o f_E2:");
 fprintf('\n');
 disp(f_E2);
+
+fprintf("The value of max of Tau_left:");
+fprintf('\n');
+disp(max(abs(Tau_left)));
+
+Tau_left_temp = abs(Tau_left);
+value_left = find(Tau_left_temp == max(abs(Tau_left)));
+
+fprintf("Left arm index:")
+disp(value_left);
+
+fprintf("The value of max of Tau_right:")
+fprintf('\n');
+disp(max(abs(Tau_right)));
+
+Tau_right_temp = abs(Tau_right);
+value_right = find(Tau_right_temp == max(abs(Tau_right)));
+
+fprintf("Right arm index:")
+disp(value_right);
+
+fprintf("Difference for f_E1:");
+fprintf('\n');
+disp((mu2*f_E1(3))-norm(f_e1));
+
+fprintf("Difference for f_E2:");
+fprintf('\n');
+disp((mu2*f_E2(3))-norm(f_e2));
+
+x_1 = Ad_OE1_new*f_E1;
+
+x_2 = Ad_OE2_new*f_E2;
+
+fprintf('The moment difference is:');
+disp(x_1(4:6,1)+x_2(4:6,1));
+
+a = G_new*[fc_1;fc_2];
+
+fprintf('The net wrench due to the contact force is:')
+fprintf('\n');
+disp(G_new*[fc_1;fc_2]);
+
+fprintf('The net moment due to the contact forces is:');
+fprintf('\n');
+disp(a(4:6,1))
+
+
+
+
 
