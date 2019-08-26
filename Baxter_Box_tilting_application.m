@@ -8,7 +8,7 @@ clc;
 c  = 'SF';
 
 % Reading the required data from the text file.
-data = getData('BAXTER_BOX_A.txt');
+data = getData('BOX_1.txt');
 [x,~] = size(data{1});
 C = {};
 

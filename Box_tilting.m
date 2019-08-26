@@ -76,6 +76,45 @@ G_TC = [eye(3), zeros(3);
 F_external = [20*sin(deg2rad(alpha));0;-20*cos(deg2rad(alpha));0;0;0];
 
 
+%% Computing the Jacobian for Baxter left and right arms.
+num_joints = numel(theta_l);
+
+% Define rotation axes (wrt. arm_mount frame for both the arms)
+w4 = w2; w5 = w3; w6 = w2; w7 = w3;
+wr = [w1, w2, w3, w4, w5, w6, w7];
+
+% Frame origins (wrt. arm_mount frame for both the arms)
+qr = [q1, q2, q3, q4, q5, q6, q7];
+
+% Transform joint axes and origins into base frame
+wr_l = g_base_left(1:3, 1:3) * wr; 
+qr_l = g_base_left(1:3, 1:3) * qr + g_base_left(1:3, 4);
+gst0_l = g_base_left * g_st0_left;
+
+wr_r = g_base_right(1:3, 1:3) * wr;
+qr_r = g_base_right(1:3, 1:3) * qr + g_base_right(1:3, 4);
+gst0_r = g_base_right * g_st0_right;
+
+% Calculating the Jacobian for the left arm of the Baxter robot.
+% [left_spatial_jac,gl] = baxter_spatial_jacobian_mat(qr_l, wr_l, theta, gst0_l);
+[g_st_left, J_spatial_left] = getSpatialJacobian(theta_l, wr_l, qr_l, gst0_l);
+
+% Calculating the Jacobian for the right arm of the Baxter robot.
+[g_st_right, J_spatial_right] = getSpatialJacobian(theta_r, wr_r, qr_r, gst0_r);
+
+% Calculating the Analytical Jacobian for the left arm
+g_left = g_st_left(:,:,num_joints);
+p_left = g_left(1:3,4);
+J_analytical_left = AnalyticalJacobian(J_spatial_left, p_left);
+
+% Calculating the Analytical Jacobian for the right arm
+g_right = g_st_right(:,:,num_joints);
+p_right = g_right(1:3,4);
+J_analytical_right = AnalyticalJacobian(J_spatial_right, p_right);
+
+
+%% Grasping force optimization formulation for the box tilting application with Force minimization objective
+
 cvx_begin
     cvx_precision high
 %   Declaring the optimization variables for our problem
@@ -99,15 +138,13 @@ cvx_begin
         
 %%%%%%%%%%%% Friction constraints at robot-object contacts%%%%%%%%%%%%%%%%
 % Anisotropic Soft Finger Contact Friction model
-%         f_temp1 = [fc1(1)/e11,fc1(2)/e12, fc_1(6)/e1r];
-%         norm(f_temp1) <= mu1*fc_1(3);
-%         f_temp2 = [fc2(1)/e21;fc2(2)/e22; fc_2(6)/e2r];
-%         norm(f_temp2) <= mu1*fc_2(3);
+        f_temp1 = [fc1(1)/e11,fc1(2)/e12, fc_1(6)/e1r];
+        norm(f_temp1) <= mu1*fc_1(3);
+        f_temp2 = [fc2(1)/e21;fc2(2)/e22; fc_2(6)/e2r];
+        norm(f_temp2) <= mu1*fc_2(3);
 % Isotropic Soft Finger Contact Friction model
-        norm(fc1) <= mu1*fc_1(3);
-        norm(fc2) <= mu1*fc_2(3);
-        norm(fc_1(6)) <= sigma*fc_1(3);
-        norm(fc_2(6)) <= sigma*fc_2(3);
+%         norm(fc1) <= mu1*fc_1(3);
+%         norm(fc2) <= mu1*fc_2(3);
 
 % Fingers can only push not pull
         fc_1(3) >= 0
@@ -117,6 +154,9 @@ cvx_begin
         fc_1(4) == 0;fc_2(4) == 0;
         fc_1(5) == 0;fc_2(5) == 0;
         
+%         norm(fc_1(6)) <= sigma*fc_1(3);
+%         norm(fc_2(6)) <= sigma*fc_2(3);
+
 %       Point Contact with friction model
 %       fc_1(6) == 0;fc_2(6) == 0;
         
@@ -142,4 +182,18 @@ cvx_begin
         f_E1(4) == 0;f_E2(4) == 0;
         f_E1(6) == 0;f_E2(6) == 0;
         f_E1(5) == 0;f_E2(5) == 0;
+        
+
+%%%%%%%%%%%%%Torque Constraints for the Baxter arm%%%%%%%%%%%%%%%%%%%%%%%%
+         
+% % Computing the Torques in the left arm of Baxter required to produce the 
+% % necessary squeezing force at the contact points.
+         Tau_left = J_analytical_left'*(G_TC*fc_2);
+         Tau_right = J_analytical_right'*(G_TC*fc_1);
+%        
+% % Implementing the torque limits as the torque constraints on the Baxter
+% % joint torques.
+        Torque_limits_min <= Tau_right <= Torque_limits_max;
+        Torque_limits_min <= Tau_left <= Torque_limits_max;
+
 cvx_end
