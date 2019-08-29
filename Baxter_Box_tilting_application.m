@@ -8,7 +8,7 @@ clc;
 c  = 'SF';
 
 % Reading the required data from the text file.
-data = getData('BOX_1.txt');
+data = getData('BAXTER_BOX_A.txt');
 [x,~] = size(data{1});
 C = {};
 
@@ -35,6 +35,7 @@ end
 % Computing the rotation matrix for the orientation of the edge frames
 % {E1}and {E2} with respect to the object frame {O}. The orientation of the
 % object frame changes as the object is being tilted at an angle.
+%% General Case: Box tilting along the width
 x_OE = [cos(deg2rad(alpha)); 0; sin(deg2rad(alpha))];
 y_OE = [0;1;0];
 z_OE = [-sin(deg2rad(alpha)); 0; cos(deg2rad(alpha))];
@@ -45,13 +46,78 @@ R_OE2 = [x_OE,y_OE,z_OE];
 p_OE1_tilt = R_OE1'*p_OE1;
 p_OE2_tilt = R_OE2'*p_OE2;
 
+% Here the external force acting on the object is due to its self weight.
+% The weight of the object is 2kg.
+F_external = [20*sin(deg2rad(alpha));0;-20*cos(deg2rad(alpha));0;0;0];
+
+
+
+%% Case 1: Box tilting along the length.
+x_OE = [1;0;0];
+y_OE = [0;cos(deg2rad(alpha));sin(deg2rad(alpha))];
+z_OE = [0;-sin(deg2rad(alpha));cos(deg2rad(alpha))];
+
+R_OE1 = [x_OE,y_OE,z_OE];
+R_OE2 = [x_OE,y_OE,z_OE];
+
+p_OE1_tilt = R_OE1'*p_OE1;
+p_OE2_tilt = R_OE2'*p_OE2;
+
+% Here the external force acting on the object is due to its self weight.
+% The weight of the object is 2kg.
+F_external = [0;20*sin(deg2rad(alpha));-20*cos(deg2rad(alpha));0;0;0];
+
+%% Case 2: Box tilting at a particular point. Two different tilt angles, 'alpha' and 'beta', given respectively 
+% The box tilts at angle 'beta' about the X axis of the object and the edge
+% reference frames.
+x_OE_beta = [1;0;0];
+y_OE_beta = [0;cos(deg2rad(beta));sin(deg2rad(beta))];
+z_OE_beta = [0;-sin(deg2rad(beta));cos(deg2rad(beta))];
+
+R_OE_beta = [x_OE_beta,y_OE_beta,z_OE_beta];
+
+% The box tilts at angle 'alpha' about the Y axis of the object and the edge
+% reference frames.
+x_OE_alpha = [cos(deg2rad(alpha)); 0; sin(deg2rad(alpha))];
+y_OE_alpha = [0;1;0];
+z_OE_alpha = [-sin(deg2rad(alpha)); 0; cos(deg2rad(alpha))];
+
+R_OE_alpha = [x_OE_alpha,y_OE_alpha,z_OE_alpha];
+
+R_OE = R_OE_beta*R_OE_alpha;
+
+p_OE1_tilt = R_OE'*p_OE1;
+
 p_OC1_hat = skewSymmetric(p_OC1);
 p_OC2_hat = skewSymmetric(p_OC2);
 
+% Calculating the grasp map:
 G_1 = GraspMap(R_OC1, p_OC1_hat, c);
 G_2 = GraspMap(R_OC2, p_OC2_hat, c);
 
 G_new = [G_1,G_2];
+
+g_OE = [R_OE, p_OE1_tilt;
+         zeros(1,3), 1];
+Ad_OE1_new = GetAdjointWrench(g_OE);
+Ad_OE2_new = 0;
+
+G_TC = [eye(3), zeros(3);
+        zeros(3), eye(3)];
+    
+F_external = [20*sin(deg2rad(alpha));0;-20*cos(deg2rad(alpha));0;0;0];
+%% This part is same for all the cases:
+p_OC1_hat = skewSymmetric(p_OC1);
+p_OC2_hat = skewSymmetric(p_OC2);
+
+% Calculating the grasp map:
+G_1 = GraspMap(R_OC1, p_OC1_hat, c);
+G_2 = GraspMap(R_OC2, p_OC2_hat, c);
+
+G_new = [G_1,G_2];
+
+% Computing the Adjoint matrix to transform the wrenches from the edge
+% reference frames to the object reference frame.
 
 g_OE1 = [R_OE1, p_OE1_tilt;
          zeros(1,3), 1];
@@ -71,9 +137,7 @@ Ad_OE2_new = GetAdjointWrench(g_OE2);
 G_TC = [eye(3), zeros(3);
         zeros(3), eye(3)];
 
-% Here the external force acting on the object is due to its self weight.
-% The weight of the object is 2kg.
-F_external = [20*sin(deg2rad(alpha));0;-20*cos(deg2rad(alpha));0;0;0];
+
 %% Computing the Jacobian for Baxter left and right arms.
 num_joints = numel(theta_l);
 
@@ -168,8 +232,8 @@ cvx_begin
 %       generated at the edge
         f_e1 = f_E1(1:2);
         f_e2 = f_E2(1:2);
-        
-        norm(f_e1) <= mu2*f_E1(3)
+%         
+        norm(f_e1) <= mu2*f_E1(3);
         f_E1(3) > 0;
         
         norm(f_e2) <= mu2*f_E2(3);
@@ -180,7 +244,7 @@ cvx_begin
         f_E1(4) == 0;f_E2(4) == 0;
         f_E1(6) == 0;f_E2(6) == 0;
         f_E1(5) == 0;f_E2(5) == 0;
-        
+%         
 
          
 %%%%%%%%%%%%%Torque Constraints for the Baxter arm%%%%%%%%%%%%%%%%%%%%%%%%

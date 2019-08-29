@@ -1,5 +1,3 @@
-%% Code for reading and evaluating Box tilting scenario Case 2
-
 close all;
 clear all;
 clc;
@@ -10,7 +8,7 @@ clc;
 c  = 'SF';
 
 % Reading the required data from the text file.
-data = getData('BOX_Case_2.txt');
+data = getData('BAXTER_BOX_A.txt');
 [x,~] = size(data{1});
 C = {};
 
@@ -28,36 +26,22 @@ for i=1:x
     assignin('base', C{i}{1}, str2num(C{i}{3}));
 end
 
-% Computing the position vector of the edge frames {E1} and {E2} with
-% respect to the object frame {O} while it is being tilted. Here 'alpha' is
-% the angle of tilt with respect to the surface.
-% p_OE1_tilt = [p_OE1(1,1)*cos(deg2rad(alpha)); p_OE1(2,1); p_OE1(1,1)*sin(deg2rad(alpha)) + p_OE1(3,1)];
-% p_OE2_tilt = [p_OE2(1,1)*cos(deg2rad(alpha)); p_OE2(2,1); p_OE2(1,1)*sin(deg2rad(alpha)) + p_OE2(3,1)];
+%% General Case: Box tilting along the width
+x_OE = [cos(deg2rad(alpha)); 0; sin(deg2rad(alpha))];
+y_OE = [0;1;0];
+z_OE = [-sin(deg2rad(alpha)); 0; cos(deg2rad(alpha))];
 
-% Computing the rotation matrix for the orientation of the edge frames
-% {E1}and {E2} with respect to the object frame {O}. The orientation of the
-% object frame changes as the object is being tilted at an angle.
-%% Case 2: Box tilting at a particular point. Two different tilt angles, 'alpha' and 'beta', given respectively 
-% The box tilts at angle 'beta' about the X axis of the object and the edge
-% reference frames.
-x_OE_beta = [1;0;0];
-y_OE_beta = [0;cos(deg2rad(beta));sin(deg2rad(beta))];
-z_OE_beta = [0;-sin(deg2rad(beta));cos(deg2rad(beta))];
+R_OE1 = [x_OE,y_OE,z_OE];
+R_OE2 = [x_OE,y_OE,z_OE];
 
-R_OE_beta = [x_OE_beta,y_OE_beta,z_OE_beta];
+p_OE1_tilt = R_OE1'*p_OE1;
+p_OE2_tilt = R_OE2'*p_OE2;
 
-% The box tilts at angle 'alpha' about the Y axis of the object and the edge
-% reference frames.
-x_OE_alpha = [cos(deg2rad(alpha)); 0; sin(deg2rad(alpha))];
-y_OE_alpha = [0;1;0];
-z_OE_alpha = [-sin(deg2rad(alpha)); 0; cos(deg2rad(alpha))];
+% Here the external force acting on the object is due to its self weight.
+% The weight of the object is 2kg.
+F_external = [20*sin(deg2rad(alpha));0;-20*cos(deg2rad(alpha));0;0;0];
 
-R_OE_alpha = [x_OE_alpha,y_OE_alpha,z_OE_alpha];
-
-R_OE = R_OE_beta*R_OE_alpha;
-
-p_OE1_tilt = R_OE'*p_OE1;
-
+%% This part is same for all the cases:
 p_OC1_hat = skewSymmetric(p_OC1);
 p_OC2_hat = skewSymmetric(p_OC2);
 
@@ -65,18 +49,28 @@ p_OC2_hat = skewSymmetric(p_OC2);
 G_1 = GraspMap(R_OC1, p_OC1_hat, c);
 G_2 = GraspMap(R_OC2, p_OC2_hat, c);
 
-G = [G_1,G_2];
+G_new = [G_1,G_2];
 
-g_OE = [R_OE, p_OE1_tilt;
+% Computing the Adjoint matrix to transform the wrenches from the edge
+% reference frames to the object reference frame.
+
+g_OE1 = [R_OE1, p_OE1_tilt;
          zeros(1,3), 1];
-Ad_OE1 = GetAdjointWrench(g_OE);
+Ad_OE1_new = GetAdjointWrench(g_OE1);
 
+g_OE2 = [R_OE2, p_OE2_tilt;
+         zeros(1,3), 1];
+Ad_OE2_new = GetAdjointWrench(g_OE2);
+
+% The transformation matrix for the rigid body transformation from the
+% contact frame to the end effector frame.
+% Assuming that T is the frame at the end effector and C is the contact
+% frame. We have assumed that the orientation of both the frames is the
+% same.
+% Also we assume that the contact frames and the tool frames coincide.
 
 G_TC = [eye(3), zeros(3);
         zeros(3), eye(3)];
-    
-F_external = [20*sin(deg2rad(alpha));0;-20*cos(deg2rad(alpha));0;0;0];
-
 %% Computing the Jacobian for Baxter left and right arms.
 num_joints = numel(theta_l);
 
@@ -128,10 +122,8 @@ cvx_begin
     subject to
     
 %   The primary wrench balance condition:
-%         G_new*[fc_1;fc_2] + F_external == 0;
-        G*[fc_1;fc_2] + F_external + Ad_OE1*f_E1  == 0;
-
-            
+         G_new*[fc_1;fc_2] + F_external == 0;
+                    
 %       Extracting the first two components from the contact wrench for
 %       ease in computation.
         fc1 = fc_1(1:2);
@@ -167,30 +159,28 @@ cvx_begin
         fc_1(3) <= F;
         fc_2(3) <= F;
         
-%       Implementing the static friction constraints on the edge wrenches
-%       generated at the edge
-        f_e1 = f_E1(1:2);
-        
-        norm(f_e1) <= mu2*f_E1(3)
-        f_E1(3) > 0;
-        
-%       Implementing the moment constraints for the edge wrenches generated
-%       at the edge.
-        f_E1(4) == 0;
-        f_E1(6) == 0;
-        f_E1(5) == 0;
-        
-
+         
 %%%%%%%%%%%%%Torque Constraints for the Baxter arm%%%%%%%%%%%%%%%%%%%%%%%%
          
 % % Computing the Torques in the left arm of Baxter required to produce the 
 % % necessary squeezing force at the contact points.
-         Tau_left = J_analytical_left'*(G_TC*fc_2);
-         Tau_right = J_analytical_right'*(G_TC*fc_1);
+%          Tau_left = J_analytical_left'*(G_TC*fc_2);
+%          Tau_right = J_analytical_right'*(G_TC*fc_1);
 %        
 % % Implementing the torque limits as the torque constraints on the Baxter
 % % joint torques.
-        Torque_limits_min <= Tau_right <= Torque_limits_max;
-        Torque_limits_min <= Tau_left <= Torque_limits_max;
+%         Torque_limits_min <= Tau_right <= Torque_limits_max;
+%         Torque_limits_min <= Tau_left <= Torque_limits_max;
 
 cvx_end
+
+fprintf("The value of the angle of tilt:");
+fprintf('\n');
+disp(alpha);
+
+fprintf("The value of fc_1:");
+fprintf('\n');
+disp(fc_1);
+fprintf("The value of fc_2:");
+fprintf('\n');
+disp(fc_2);
