@@ -83,12 +83,14 @@ ax = h.Parent;
 Title = title('Angle of tilt VS Squeezing force');
 X_label = xlabel('Angle of tilt (degrees)');
 Y_label = ylabel('Squeezing force (N)');
+axis([0 55 0 28])
 grid on;
 
 xtl = ax.XTickLabel;
 xtld = strcat(xtl,'^{\circ}');
 ax.XTickLabel = xtld;
 
+% set(gca, 'ytick',0:0.1:28);
 set( gca                       , ...
     'FontName'   , 'Helvetica' );
 set([Title, X_label, Y_label], ...
@@ -102,7 +104,7 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
 set(gcf, 'PaperPositionMode', 'auto');
-% print -depsc2 finalPlot1.eps
+print -depsc2 Squeezing_force_FOpt.eps
 % close;
 
 
@@ -130,6 +132,7 @@ ax = h.Parent;
 Title = title('Angle of tilt VS Reaction Forces');
 X_label = xlabel('Angle of tilt (degrees)');
 Y_label = ylabel('Reaction force generated (N)');
+axis([0 55 0 10.5])
 grid on;
 
 xtl = ax.XTickLabel;
@@ -149,7 +152,7 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
  set(gcf, 'PaperPositionMode', 'auto');
-% print -depsc2 finalPlot2.eps
+ print -depsc2 Reaction_Forces_FOpt.eps
 % close;
 
 
@@ -178,13 +181,14 @@ grid on;
 figure('Units', 'pixels', ...
     'Position', [100 100 500 375]);
 hold on;
-h = plot(theta_experimental, Tau_opt_diff_e1, 'b');
+h = plot(theta_experimental, diff_1, 'b');
 ax = h.Parent;
-e = plot(theta_experimental, Tau_opt_diff_e2, 'r');
+% e = plot(theta_experimental, Tau_opt_diff_e2, 'r');
+
 Title = title('Friction cone constraints satisfaction');
 X_label = xlabel('Angle of tilt (degrees)');
-Y_label = ylabel('Satisfaction criteria (N).');
-
+Y_label = ylabel('$\sqrt{f_t} - \mu f_n$','FontSize', 14,'Interpreter','latex');
+axis([0 55 0 1])
 grid on;
 
 xtl = ax.XTickLabel;
@@ -195,16 +199,16 @@ set( gca                       , ...
     'FontName'   , 'Helvetica' );
 set([Title, X_label, Y_label], ...
     'FontName'   , 'AvantGarde');
-set(gca             , ...
-    'FontSize'   , 8           );
-set([X_label, Y_label]  , ...
-    'FontSize'   , 10          );
+% set(gca             , ...
+%     'FontSize'   , 8           );
+% set([X_label]  , ...
+%     'FontSize'   , 10          );
 set( Title                    , ...
     'FontSize'   , 12          , ...
     'FontWeight' , 'bold'      );
 
  set(gcf,'PaperPositionMode', 'auto');
-% print -depsc2 finalPlot3.eps
+ print -depsc2 Friction_Cone_Satisfaction_FOpt.eps
 % close;
 
 %% 
@@ -219,6 +223,7 @@ hLegend = legend('Torque in left arm','Torque in right arm','location', 'NorthEa
 Title = title('Joint Torque variation in both arms');
 X_label = xlabel('Angle of tilt (degrees)');
 Y_label = ylabel('Torque required (N).');
+axis([0 55 0 15])
 grid on;
 
 xtl = ax.XTickLabel;
@@ -240,7 +245,7 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
 set(gcf,'PaperPositionMode', 'auto');
-% print -depsc2 TorquePlot1.eps
+print -depsc2 Torque_Variation_FOpt.eps
 % close;
 
 
@@ -249,13 +254,14 @@ set(gcf,'PaperPositionMode', 'auto');
 figure('Units', 'pixels', ...
     'Position', [100 100 500 375]);
 hold on;
-h = plot(theta_experimental, F_e1_tau_opt, 'r');
+h = plot(theta_experimental, Fc_1_tau_opt, 'r');
 ax = h.Parent;
-e = plot(theta_experimental, F_e_experimental, '--b');
+e = plot(theta_experimental, Fc_opt_experimental, '--b');
 hLegend = legend('Torque opt.','Force opt.','location', 'NorthEast' );
-Title = title('The variation in the Reaction force at E1');
+Title = title('The variation in the Squeezing force at C1');
 X_label = xlabel('Angle of tilt (degrees)');
-Y_label = ylabel('Reaction force at E1 (N).');
+Y_label = ylabel('Squeezing force at C1 (N).');
+axis([0 55 0 30])
 grid on;
 
 xtl = ax.XTickLabel;
@@ -275,7 +281,7 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
 set(gcf,'PaperPositionMode', 'auto');
-% print -depsc2 fe1_T_opt.eps
+print -depsc2 Squeezing_Force_C1_TOpt.eps
 % close;
 
 %%
@@ -283,13 +289,14 @@ set(gcf,'PaperPositionMode', 'auto');
 figure('Units', 'pixels', ...
     'Position', [100 100 500 375]);
 hold on;
-h = plot(theta_experimental, F_e2_tau_opt, 'r');
+h = plot(theta_experimental, Fc_2_tau_opt, 'r');
 ax = h.Parent;
-e = plot(theta_experimental, F_e_experimental, '--b');
+e = plot(theta_experimental, Fc_opt_experimental, '--b');
 hLegend = legend('Torque opt.','Force opt.','location', 'NorthEast' );
-Title = title('The variation in the Reaction force at E2');
+Title = title('The variation in the Squeezing force at C2');
 X_label = xlabel('Angle of tilt (degrees)');
-Y_label = ylabel('Reaction force at E2 (N).');
+Y_label = ylabel('Squeezing force at C2 (N).');
+axis([0 55 0 30]);
 grid on;
 
 xtl = ax.XTickLabel;
@@ -309,7 +316,7 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
 set(gcf,'PaperPositionMode', 'auto');
-% print -depsc2 fe2_T_opt.eps
+print -depsc2 Squeezing_Force_C2_TOpt.eps
 % close;
 
 %%
@@ -323,6 +330,7 @@ hLegend = legend('Torque opt.','Force opt.','location', 'NorthEast' );
 Title = title('The variation in the max. Joint Torque in left arm');
 X_label = xlabel('Angle of tilt (degrees)');
 Y_label = ylabel('Joint Torque magnitude (N/m)');
+axis([0 55 0 15])
 grid on;
 
 xtl = ax.XTickLabel;
@@ -342,8 +350,8 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
 set(gcf,'PaperPositionMode', 'auto');
-% print -depsc2 left_T_opt.eps
-% close;
+print -depsc2 Torque_Variation_Left_TOpt.eps
+close;
 
 figure('Units', 'pixels', ...
     'Position', [100 100 500 375]);
@@ -355,6 +363,7 @@ hLegend = legend('Torque opt.','Force opt.','location', 'NorthEast' );
 Title = title('The variation in the max. Joint Torque in right arm');
 X_label = xlabel('Angle of tilt (degrees)');
 Y_label = ylabel('Joint Torque magnitude (N/m)');
+axis([0 55 0 15])
 grid on;
 
 xtl = ax.XTickLabel;
@@ -374,7 +383,7 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
 set(gcf,'PaperPositionMode', 'auto');
-% print -depsc2 right_T_opt.eps
+print -depsc2 Torque_Variation_Right_TOpt.eps
 
 %%
 figure('Units', 'pixels', ...
@@ -387,8 +396,9 @@ hLegend = legend('Torque in left arm','Torque in right arm','location', 'NorthEa
 Title = title('Joint Torque variation in both arms');
 X_label = xlabel('Angle of tilt (degrees)');
 Y_label = ylabel('Torque required (N/m).');
+axis([0 55 0 15])
 grid on;
-h = plot(theta_experimental, Fc_opt_experimental, 'b');
+
 xtl = ax.XTickLabel;
 xtld = strcat(xtl,'^{\circ}');
 ax.XTickLabel = xtld;
@@ -408,7 +418,7 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
 set(gcf,'PaperPositionMode', 'auto');
-print -depsc2 Torque_opt_Plot.eps
+print -depsc2 Torque_Variation_TOpt.eps
 % close;
 
 %% 
@@ -468,6 +478,7 @@ Title = title('Torque Minimization');
 X_label = xlabel('Angle of tilt (degrees)');
 Y_label = ylabel('Maximum Torque (Nm)');
 hLegend = legend('Torque opt.','Force opt.','location', 'NorthEast' );
+axis([0 55 0 15])
 grid on;
 
 xtl = ax.XTickLabel;
@@ -487,7 +498,7 @@ set( Title                    , ...
     'FontWeight' , 'bold'      );
 
 set(gcf, 'PaperPositionMode', 'auto');
-% print -depsc2 finalPlot1.eps
+print -depsc2 Torque_Minimization.eps
 % close;
 
 
